@@ -8,7 +8,9 @@
 Un joc educatiu de matemàtiques en **català**. Va néixer per a les dues filles de
 l'usuari (una acabant Infantil-3 i l'altra acabant 1r de Primària) i des del
 2026-07-13 cada perfil tria el seu **curs** — d'Infantil 3 (P3) fins a 6è de
-Primària — amb l'itinerari de continguts corresponent (vegeu el punt 2).
+Primària — amb l'itinerari de continguts corresponent (vegeu el punt 2). Des del
+2026-07-14 hi ha **dues àrees**: Números 🔢 (matemàtiques) i Lletres 📚 (llengua
+catalana, vegeu el punt 12); es trien en una pantalla després del perfil.
 
 Tot el joc viu en un únic fitxer estàtic: **`index.html`** (HTML + CSS + JS vanilla, sense
 frameworks ni backend). Funciona obrint el fitxer directament al navegador.
@@ -97,6 +99,38 @@ El joc ja té implementat:
     baralla la llista de generadors del curs i es consumeix sencera abans de
     repetir-ne cap, així un bloc de 10 queda ben variat (també substitueix
     l'anti-repetició per reintents del prompt original).
+12. **Àrea de Lletres** (2026-07-14): itinerari de llengua catalana estil
+    Ludilletres a Infantil i currículum de català a Primària (mapa
+    `GENS_LLETRES`):
+    - **I3**: vocals (buscar, aparellar maj/min), primera lletra de paraules que
+      comencen amb vocal, síl·labes picant de mans (1-2).
+    - **I4**: consonants en progressió Ludilletres (P M L S T N), síl·labes,
+      primera lletra, rimes.
+    - **I5**: tot l'abecedari (al nivell 3, sense mostrar la lletra: cal
+      reconèixer-la pel nom), majúscula/minúscula, síl·labes, rimes, primeres
+      lectures de mots.
+    - **1r**: llegir el mot, la lletra amagada (P_MA), síl·labes, rimes,
+      article el/la, singular/plural.
+    - **2n**: ordenar frases curtes, ordre alfabètic, l'intrús, ortografia
+      ca-que-qui/ga-gue-gui.
+    - **3r**: sinònims i contraris, b/v i g/j, categoria gramatical
+      (nom/verb/adjectiu), ordre alfabètic, ordenar frases.
+    - **4t**: temps verbals (passat/present/futur), s/ss/c/ç/z,
+      aguda/plana/esdrúixola, sinònims/contraris.
+    - **5è**: g/j, x/ix i l·l, accent gràfic, frases fetes, ordenar frases
+      llargues.
+    - **6è**: h i dièresi, accentuació, frases fetes, temps verbals.
+    - **Bancs de paraules curats a mà** (`MOTS`, `RIMES`, `SINONIMS`,
+      `ANTONIMS`, `CAMPS`, `FRASES`, `ORTOGRAFIA`, `ACCENTS`, `FRASES_FETES`,
+      `VERBS_TEMPS`, `CATEGORIES`): si s'hi afegeixen entrades, revisar
+      ortografia, síl·labes i apostrofació a mà.
+    - **Nivell adaptatiu per àrea**: `p.nivells = {mates, lletres}` amb migració
+      automàtica dels perfils antics; l'historial guarda `area` a cada resposta
+      i la zona de pares mostra els nivells i un gràfic d'evolució per àrea.
+    - **Desviació documentada del prompt original**: a l'àrea de Lletres amb
+      cursos d'infantil, la pregunta es llegeix sola en veu alta en aparèixer
+      (un nen que no llegeix no hi podria jugar); a Primària la veu segueix
+      sent només manual (botó 🔊).
 
 ## Restriccions pedagògiques (NO trencar)
 
