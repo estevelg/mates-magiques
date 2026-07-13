@@ -27,12 +27,15 @@ El joc ja té implementat:
    `GENS` d'`index.html` (una llista de generadors per curs, amb els rangs de cada
    nivell adaptatiu com a paràmetres). Resum:
    - **I3**: comptar i buscar números fins a 3/4/5, on n'hi ha més, colors, formes
-     bàsiques, gran/petit, patrons. 2 opcions de resposta.
-   - **I4**: el conjunt "petits" original intacte: comptar fins a 10, sumes/restes
-     visuals petites, formes, colors, patrons, gran/petit, busca el número,
-     problemes ≤10. 2-3 opcions.
-   - **I5**: comptar fins a 20, sumes/restes visuals ≤10, ordenar 3 nombres ≤10,
-     seqüències +1, busca el número fins a 15.
+     bàsiques, gran/petit, patrons, quin és diferent, toca el color, el dau
+     (subitització) i trens llarg/curt. 2-3 opcions de resposta.
+   - **I4**: el conjunt "petits" original (comptar fins a 10, sumes/restes visuals
+     petites, formes, colors, patrons, gran/petit, busca el número, problemes ≤10)
+     més els reptes de varietat afegits el 2026-07-13: quin és diferent, toca el
+     color, el dau i trens llarg/curt. 2-3 opcions.
+   - **I5**: comptar fins a 20 (també amb distractors barrejats), sumes/restes
+     visuals ≤10, ordenar 3 nombres ≤10, seqüències +1, busca el número fins a 15,
+     més quin és diferent, toca el color, el dau i trens llarg/curt.
    - **1r (`p1`)**: el conjunt "grans" original, **INTACTE** (especificació exacta
      a `docs/prompt-original.md`): sumes/restes ≤20 sense portar, incògnita,
      dobles/meitats, comparar ≤99, seqüències, geometria, rellotge en punt,
@@ -80,6 +83,14 @@ El joc ja té implementat:
    selector (pensat per al pas de curs al setembre).
 9. **Navegació**: botó "↩️ Torna enrere" al formulari de perfil nou (visible només
    si ja existeix algun perfil); el botó 👧 desa i torna a la selecció de jugadora.
+10. **Blocs de 10 preguntes** (2026-07-13): les partides van per rondes de 10, amb
+    comptador "Pregunta X de 10", barra de progrés del bloc (abans mostrava la
+    ratxa d'encerts — canvi respecte a `docs/prompt-original.md`) i pantalla final
+    amb el recompte, missatge sempre positiu i botons "Una altra ronda!" / "Plego
+    per avui". La tria de reptes va amb **bossa barrejada** (`bossaGens`): es
+    baralla la llista de generadors del curs i es consumeix sencera abans de
+    repetir-ne cap, així un bloc de 10 queda ben variat (també substitueix
+    l'anti-repetició per reintents del prompt original).
 
 ## Restriccions pedagògiques (NO trencar)
 

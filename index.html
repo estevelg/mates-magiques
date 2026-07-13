@@ -124,6 +124,60 @@
     text-transform:uppercase;
     letter-spacing:0.5px;
   }
+  .block-counter{
+    font-size:0.78rem;
+    font-weight:bold;
+    color:#a0a0bf;
+    margin-top:-10px;
+  }
+  .blockend-panel{
+    display:none;
+    background:var(--fons);
+    border-radius:24px;
+    padding:28px 18px;
+    min-height:270px;
+    text-align:center;
+  }
+  .blockend-panel.open{ display:block; }
+  .blockend-mascot{ font-size:4rem; animation:bounce 0.8s ease; }
+  .blockend-score{
+    font-size:1.3rem;
+    font-weight:bold;
+    margin:10px 0 6px;
+  }
+  .blockend-msg{
+    font-size:1.05rem;
+    font-weight:bold;
+    color:#5b4bc4;
+    margin-bottom:18px;
+  }
+  .blockend-exit{
+    display:block;
+    margin:12px auto 0;
+    font-family:inherit;
+    font-size:0.95rem;
+    font-weight:bold;
+    padding:9px 22px;
+    border-radius:16px;
+    border:2px solid #d7e3ff;
+    background:white;
+    color:#7a7a9a;
+    cursor:pointer;
+  }
+  .dau{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:7px;
+    width:100px;
+    height:100px;
+    background:white;
+    border:3px solid #5b4bc4;
+    border-radius:16px;
+    padding:12px;
+    box-sizing:border-box;
+  }
+  .dau-punt{ border-radius:50%; }
+  .dau-punt.ple{ background:#3a3a5c; }
   .question{
     font-size:1.35rem;
     font-weight:bold;
@@ -668,6 +722,7 @@
 
   <div class="game-card" id="gameCard" style="display:none;">
     <div class="game-label" id="gameLabel">Sumes</div>
+    <div class="block-counter" id="blockCounter"></div>
     <div class="question-row">
       <div class="question" id="question"></div>
       <button class="icon-btn" id="speakBtn" title="Llegir en veu alta">🔊</button>
@@ -678,11 +733,22 @@
     <button class="next-btn" id="nextBtn" style="display:none;">Següent 👉</button>
   </div>
 
+  <div class="blockend-panel" id="blockEndPanel">
+    <div class="blockend-mascot" id="blockEndMascot">🦊</div>
+    <div class="dashboard-title">🎉 Ronda acabada!</div>
+    <div class="blockend-score" id="blockEndScore"></div>
+    <div class="blockend-msg" id="blockEndMsg"></div>
+    <button class="next-btn" id="blockAgain">Una altra ronda! 🚀</button>
+    <button class="blockend-exit" id="blockExit">Plego per avui 👋</button>
+  </div>
+
   <div class="footer-note">Fet amb 💛 · adaptat al curs de cada jugadora (d'Infantil 3 a 6è de Primària)</div>
 </div>
 
 <script>
 (function(){
+  const PREGUNTES_PER_BLOC = 10;
+
   const state = {
     level: 1,          // 1 to 3
     stars: 0,
@@ -693,7 +759,9 @@
     bestLevel: 1,
     roundStartTime: null,
     history: [],       // {level, correct, elapsedMs, type}
-    current: null
+    current: null,
+    blockAnswered: 0,  // preguntes respostes dins del bloc actual
+    blockCorrect: 0    // encerts dins del bloc actual
   };
 
   // ---------- PERFILS ----------
@@ -735,9 +803,9 @@
   function slowMs(){ return TEMPS_ETAPA[etapaActiva()].lent; }
 
   const COLORS = ['#ff8fab','#4fc3f7','#ffd54f','#81d4a2','#b39ddb','#ff9e6d'];
-  const OBJECT_EMOJIS = ['🍎','⭐','🎈','🐟','🍓','🚗','🐝','🍪','🐸','🌸'];
+  const OBJECT_EMOJIS = ['🍎','⭐','🎈','🐟','🍓','🚗','🐝','🍪','🐸','🌸','🦆','🍌','⚽','🐢','🧸','🍩'];
   const SHAPE_NAMES = {circle:'Cercle', square:'Quadrat', triangle:'Triangle', rectangle:'Rectangle', star:'Estrella'};
-  const TYPE_LABELS = {suma:'Sumes', resta:'Restes', incognita:'Troba el número', dobles:'Dobles i meitats', compara:'Comparar', sequencia:'Seqüències', geometria:'Formes', rellotge:'Rellotge', comptar:'Comptar', colors:'Colors', mida:'Gran i petit', ordenar:'Ordenar nombres', problema:'Problemes', monedes:'Monedes', reconeixer:'Busca el número', multiplicacio:'Multiplicar', divisio:'Dividir', fraccions:'Fraccions', decimals:'Decimals', percentatge:'Percentatges', mesura:'Mesures', parell:'Parells i senars', operacions:'Operacions combinades', mitjana:'Mitjana', proporcio:'Proporcions', temperatura:'Temperatura', angles:'Angles', perimetre:'Perímetre i àrea', multiples:'Múltiples i divisors'};
+  const TYPE_LABELS = {suma:'Sumes', resta:'Restes', incognita:'Troba el número', dobles:'Dobles i meitats', compara:'Comparar', sequencia:'Seqüències', geometria:'Formes', rellotge:'Rellotge', comptar:'Comptar', colors:'Colors', mida:'Gran i petit', ordenar:'Ordenar nombres', problema:'Problemes', monedes:'Monedes', reconeixer:'Busca el número', multiplicacio:'Multiplicar', divisio:'Dividir', fraccions:'Fraccions', decimals:'Decimals', percentatge:'Percentatges', mesura:'Mesures', parell:'Parells i senars', operacions:'Operacions combinades', mitjana:'Mitjana', proporcio:'Proporcions', temperatura:'Temperatura', angles:'Angles', perimetre:'Perímetre i àrea', multiples:'Múltiples i divisors', diferent:'Quin és diferent', daus:'El dau', llargada:'Llarg i curt'};
 
   function rand(min,max){ return Math.floor(Math.random()*(max-min+1))+min; }
   function pick(arr){ return arr[rand(0,arr.length-1)]; }
@@ -815,7 +883,7 @@
   }
 
   function emojiName(e){
-    const names = {'🍎':'pomes','⭐':'estrelles','🎈':'globus','🐟':'peixos','🍓':'maduixes','🚗':'cotxes','🐝':'abelles','🍪':'galetes','🐸':'granotes','🌸':'flors'};
+    const names = {'🍎':'pomes','⭐':'estrelles','🎈':'globus','🐟':'peixos','🍓':'maduixes','🚗':'cotxes','🐝':'abelles','🍪':'galetes','🐸':'granotes','🌸':'flors','🦆':'ànecs','🍌':'plàtans','⚽':'pilotes','🐢':'tortugues','🧸':'ossets','🍩':'dònuts'};
     return names[e] || 'coses';
   }
 
@@ -1277,7 +1345,7 @@
 
   const NOMS_PROBLEMA = ['En Pau','La Júlia','En Biel','La Martina','L\'Aina','En Nil'];
   // emojiName retorna noms en plural; per fer la pregunta ben escrita cal saber el gènere
-  const FEMENINS_PLURAL = ['pomes','estrelles','maduixes','abelles','galetes','granotes','flors'];
+  const FEMENINS_PLURAL = ['pomes','estrelles','maduixes','abelles','galetes','granotes','flors','pilotes','tortugues'];
 
   function makeWordProblem(maxSum, nOpcions){
     const qui = pick(NOMS_PROBLEMA);
@@ -1409,11 +1477,95 @@
     return function(){
       const n = rand(1, lvl(maxs));
       const emoji = pick(OBJECT_EMOJIS);
+      const nom = emojiName(emoji);
+      const quants = FEMENINS_PLURAL.includes(nom) ? 'Quantes' : 'Quants';
       return { type:'comptar', label:'Comptem! 🔢',
-        question:`Compta bé! Quants n'hi ha?`,
+        question: pick([
+          `Compta bé! Quants n'hi ha?`,
+          `${quants} ${nom} veus?`,
+          `Compta els dibuixos! Quants n'hi ha?`,
+        ]),
         visualHTML:`<div class="visual-row"><div class="group">${emoji.repeat(n)}</div></div>`,
         options: uniqueOptions(n, 1, Math.max(4, lvl(maxs)+2), nOpts),
         answer:n };
+    };
+  }
+
+  // Comptar amb distractors barrejats: cal fixar-se en un sol tipus de dibuix
+  function genComptarBarrejatF(maxs, nOpts){
+    return function(){
+      const [objectiu, distractor] = shuffle(OBJECT_EMOJIS).slice(0,2);
+      const n = rand(2, lvl(maxs));
+      const m = rand(2, lvl(maxs));
+      const barreja = shuffle(Array(n).fill(objectiu).concat(Array(m).fill(distractor)));
+      const nom = emojiName(objectiu);
+      const quants = FEMENINS_PLURAL.includes(nom) ? 'Quantes' : 'Quants';
+      return { type:'comptar', label:'Comptem! 🔢',
+        question:`${quants} ${nom} hi ha? Fixa-t'hi bé!`,
+        visualHTML:`<div class="visual-row"><div class="group">${barreja.join('')}</div></div>`,
+        options: uniqueOptions(n, 1, lvl(maxs)+2, nOpts),
+        answer:n };
+    };
+  }
+
+  // Subitització amb el dau: reconèixer la quantitat pel dibuix dels punts
+  const DAUS_POSICIONS = {1:[4],2:[0,8],3:[0,4,8],4:[0,2,6,8],5:[0,2,4,6,8],6:[0,2,3,5,6,8]};
+  function dauHTML(n){
+    let cells = '';
+    for(let i=0;i<9;i++){ cells += `<div class="dau-punt${DAUS_POSICIONS[n].includes(i)?' ple':''}"></div>`; }
+    return `<div class="dau">${cells}</div>`;
+  }
+  function genDausF(maxs, nOpts){
+    return function(){
+      const n = rand(1, Math.min(6, lvl(maxs)));
+      return { type:'daus', label:'El dau 🎲',
+        question:'Quants punts té el dau?',
+        visualHTML:`<div class="visual-row">${dauHTML(n)}</div>`,
+        options: uniqueOptions(n, 1, 6, nOpts),
+        answer:n };
+    };
+  }
+
+  function genDiferentF(nOpts){
+    return function(){
+      const [principal, intrus, extra] = shuffle(OBJECT_EMOJIS).slice(0,3);
+      const total = rand(4,6);
+      const posIntrus = rand(0, total-1);
+      const fila = Array.from({length:total}, (_,i)=> i===posIntrus ? intrus : principal);
+      const options = nOpts>=3 ? shuffle([intrus, principal, extra]) : shuffle([intrus, principal]);
+      return { type:'diferent', label:'Quin és diferent? 🕵️',
+        question:'Quin dibuix NO és com els altres?',
+        visualHTML:`<div class="visual-row"><div class="group">${fila.join('')}</div></div>`,
+        options, answer:intrus };
+    };
+  }
+
+  const CERCLES_COLOR = [['🔴','vermell'],['🔵','blau'],['🟡','groc'],['🟢','verd'],['🟣','morat'],['🟠','taronja'],['🟤','marró']];
+  function genColorTocaF(nOpts){
+    return function(){
+      const tria = shuffle(CERCLES_COLOR).slice(0, nOpts);
+      const [emoji, nom] = tria[0];
+      return { type:'colors', label:'Colors 🎨',
+        question:`Toca el cercle de color ${nom.toUpperCase()}!`,
+        visualHTML:'',
+        options: shuffle(tria.map(t=>t[0])),
+        answer: emoji };
+    };
+  }
+
+  function genLlargCurtF(){
+    return function(){
+      let a = rand(2,6), b = rand(2,6);
+      while(b===a){ b = rand(2,6); }
+      const buscaLlarg = Math.random()<0.5;
+      const answer = buscaLlarg ? (a>b?'A':'B') : (a<b?'A':'B');
+      return { type:'llargada', label:'Llarg i curt 🚂',
+        question: buscaLlarg ? 'Quin tren és més LLARG?' : 'Quin tren és més CURT?',
+        visualHTML:`<div class="visual-row" style="flex-direction:column;align-items:flex-start;gap:6px;font-size:1.8rem;">
+            <div><b>A</b> 🚂${'🚃'.repeat(a)}</div>
+            <div><b>B</b> 🚂${'🚃'.repeat(b)}</div>
+          </div>`,
+        options:['A','B'], answer };
     };
   }
 
@@ -2072,15 +2224,28 @@
   // ---------- ITINERARI PER CURS ----------
   const GENS = {
     i3: [
-      genComptarF([3,4,5],2), genComptarF([3,4,5],2),
+      genComptarF([3,4,5],2),
       genBuscaNumF([3,4,5],2),
       genGrupsF([3,4,5]),
+      genDausF([3,4,6],2),
+      genDiferentF(2),
+      genColorTocaF(3),
+      genLlargCurtF(),
       genColorP, genBigSmallP, genShapeP, genPatternP,
     ],
-    // I4 (4-5 anys): el conjunt "petits" original, sense canvis
-    i4: [genCountP, genCountP, genAddP, genSubP, genCompareGroupsP, genShapeP, genColorP, genPatternP, genBigSmallP, genFindNumberP, genWordProblemP],
+    // I4 (4-5 anys): el conjunt "petits" original + reptes de varietat (2026-07-13)
+    i4: [
+      genComptarF([4,7,10],3),
+      genAddP, genSubP, genCompareGroupsP, genShapeP, genColorP, genPatternP,
+      genBigSmallP, genFindNumberP, genWordProblemP,
+      genDausF([4,6,6],3),
+      genDiferentF(3),
+      genColorTocaF(3),
+      genLlargCurtF(),
+    ],
     i5: [
       genComptarF([10,15,20],3),
+      genComptarBarrejatF([6,8,10],3),
       genBuscaNumF([10,12,15],3),
       genSumaVisualF([6,8,10],3),
       genRestaVisualF([5,8,10],3),
@@ -2088,6 +2253,10 @@
       genOrdenaF([6,9,10],3),
       genSeqNumF([[1],[1],[1,2]],[5,8,10],3),
       genShapeP, genPatternP, genWordProblemP,
+      genDausF([6,6,6],3),
+      genDiferentF(3),
+      genColorTocaF(3),
+      genLlargCurtF(),
     ],
     // 1r: el conjunt "grans" original, sense canvis (espec. a docs/prompt-original.md)
     p1: [genAddition, genSubtraction, genMissingNumber, genDoubleHalf, genCompare, genSequence, genGeometry, genClock, genOrder, genWordProblem, genMoney],
@@ -2163,13 +2332,19 @@
     return gens || GENS.p1;
   }
   let lastType = null;
+  // Bossa barrejada de generadors: es baralla la llista del curs i es va
+  // consumint, de manera que tots els tipus surten abans que cap es repeteixi.
+  let bossaGens = [];
 
   function newRound(){
-    let gen = pick(currentGenerators());
+    if(bossaGens.length===0){ bossaGens = shuffle(currentGenerators().slice()); }
+    let gen = bossaGens.shift();
     let round = gen();
-    let tries=0;
-    while(round.type===lastType && tries<5){
-      gen = pick(currentGenerators());
+    let tries = 0;
+    // si enllaça amb el mateix tipus que l'anterior, passa'l al final de la bossa
+    while(round.type===lastType && bossaGens.length>0 && tries<5){
+      bossaGens.push(gen);
+      gen = bossaGens.shift();
       round = gen();
       tries++;
     }
@@ -2181,6 +2356,8 @@
   function renderRound(){
     const r = state.current;
     document.getElementById('gameLabel').textContent = r.label;
+    document.getElementById('blockCounter').textContent =
+      `Pregunta ${Math.min(state.blockAnswered+1, PREGUNTES_PER_BLOC)} de ${PREGUNTES_PER_BLOC}`;
     document.getElementById('question').textContent = r.question;
     document.getElementById('visualArea').innerHTML = r.visualHTML || '';
     document.getElementById('feedback').textContent = '';
@@ -2247,18 +2424,23 @@
     state.bestLevel = Math.max(state.bestLevel, state.level);
 
     state.history.push({ level: state.level, correct, elapsedMs: elapsed, type: r.type });
+    state.blockAnswered++;
+    if(correct) state.blockCorrect++;
     persistProfile();
 
     setTimeout(()=>{ mascot.classList.remove('bounce','sad'); }, 650);
 
     updateStats();
-    document.getElementById('nextBtn').style.display = 'inline-block';
+    const nextBtn = document.getElementById('nextBtn');
+    nextBtn.textContent = state.blockAnswered >= PREGUNTES_PER_BLOC ? 'Veure el resultat 🎉' : 'Següent 👉';
+    nextBtn.style.display = 'inline-block';
   }
 
   function updateStats(){
     document.getElementById('starCount').textContent = state.stars;
     document.getElementById('levelNum').textContent = state.level;
-    const pct = Math.min(100, (state.streakCorrect/3)*100);
+    // La barra mostra el progrés dins del bloc de 10 preguntes
+    const pct = Math.min(100, (state.blockAnswered/PREGUNTES_PER_BLOC)*100);
     document.getElementById('progressFill').style.width = pct + '%';
   }
 
@@ -2366,15 +2548,50 @@
     });
   }
 
+  let dashboardDesDeBlocFinal = false;
+
   function openDashboard(){
     if('speechSynthesis' in window) window.speechSynthesis.cancel();
     renderDashboard();
+    dashboardDesDeBlocFinal = document.getElementById('blockEndPanel').classList.contains('open');
+    document.getElementById('blockEndPanel').classList.remove('open');
     document.getElementById('dashboardPanel').classList.add('open');
     document.getElementById('gameCard').style.display = 'none';
   }
   function closeDashboard(){
     document.getElementById('dashboardPanel').classList.remove('open');
+    if(dashboardDesDeBlocFinal){
+      document.getElementById('blockEndPanel').classList.add('open');
+    } else {
+      document.getElementById('gameCard').style.display = 'flex';
+    }
+  }
+
+  // ---------- BLOCS DE 10 PREGUNTES ----------
+
+  function openBlockEnd(){
+    if('speechSynthesis' in window) window.speechSynthesis.cancel();
+    const encerts = state.blockCorrect;
+    document.getElementById('blockEndMascot').textContent = activeProfile ? activeProfile.avatar : '🦊';
+    document.getElementById('blockEndScore').textContent = `Has encertat ${encerts} de ${PREGUNTES_PER_BLOC} preguntes! ⭐`;
+    let missatge;
+    if(encerts >= PREGUNTES_PER_BLOC) missatge = 'PERFECTE! Ho has encertat tot! 🏆';
+    else if(encerts >= 7) missatge = 'Molt bé! Quina passada! 🌟';
+    else if(encerts >= 5) missatge = 'Bona feina! Cada dia una mica millor! 💪';
+    else missatge = 'Molt bé per practicar! En vols fer una altra? 🍀';
+    document.getElementById('blockEndMsg').textContent = missatge;
+    document.getElementById('gameCard').style.display = 'none';
+    document.getElementById('blockEndPanel').classList.add('open');
+    if(encerts >= 7) launchConfetti();
+  }
+
+  function startBlock(){
+    state.blockAnswered = 0;
+    state.blockCorrect = 0;
+    document.getElementById('blockEndPanel').classList.remove('open');
     document.getElementById('gameCard').style.display = 'flex';
+    updateStats();
+    newRound();
   }
 
   // ---------- ZONA DE PARES ----------
@@ -2501,6 +2718,7 @@
     document.getElementById('gameCard').style.display = v ? 'flex' : 'none';
     document.getElementById('statsBar').style.display = v ? 'flex' : 'none';
     document.getElementById('dashboardPanel').classList.remove('open');
+    document.getElementById('blockEndPanel').classList.remove('open');
   }
 
   function renderProfileScreen(){
@@ -2598,7 +2816,10 @@
     state.streakWrong = 0;
     state.fastStreak = 0;
     state.slowStreak = 0;
+    state.blockAnswered = 0;
+    state.blockCorrect = 0;
     lastType = null;
+    bossaGens = [];
     document.getElementById('mascot').textContent = p.avatar;
     document.getElementById('playerChip').textContent = `${p.avatar} ${p.name}`;
     setGameVisible(true);
@@ -2628,7 +2849,12 @@
     renderProfileScreen();
   }
 
-  document.getElementById('nextBtn').addEventListener('click', newRound);
+  document.getElementById('nextBtn').addEventListener('click', ()=>{
+    if(state.blockAnswered >= PREGUNTES_PER_BLOC){ openBlockEnd(); }
+    else { newRound(); }
+  });
+  document.getElementById('blockAgain').addEventListener('click', startBlock);
+  document.getElementById('blockExit').addEventListener('click', showProfileScreen);
   document.getElementById('speakBtn').addEventListener('click', ()=>{ if(state.current) speak(state.current.question); });
   document.getElementById('dashboardBtn').addEventListener('click', openDashboard);
   document.getElementById('dashboardClose').addEventListener('click', closeDashboard);
