@@ -1,9 +1,12 @@
 # 🦊 El Món Màgic dels Números
 
-Joc educatiu de matemàtiques en català per a dues germanes (4-5 anys i 6-7 anys),
-amb perfils separats, dificultat adaptativa, veu en català i estadístiques.
+Joc educatiu de matemàtiques en català per a nens i nenes **d'Infantil 3 (P3)
+fins a 6è de Primària**: cada perfil tria el seu curs i el joc adapta els reptes
+a l'itinerari curricular corresponent (LOMLOE), amb dificultat adaptativa dins
+de cada curs, veu en català i estadístiques.
 Inclou una **zona de pares** (enllaç al peu de la pantalla de perfils) amb el
-seguiment de cada nena: encerts per tipus de repte, evolució i última partida.
+seguiment de cada perfil — encerts per tipus de repte, evolució, última
+partida — i un selector per canviar de curs al setembre.
 
 ## Jugar-hi ara
 

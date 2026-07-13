@@ -5,10 +5,10 @@
 
 ## Què és això
 
-Un joc educatiu de matemàtiques en **català**, per a les dues filles de l'usuari:
-
-- **La petita**: 4-5 anys, acaba d'acabar Infantil-3.
-- **La gran**: 6-7 anys, acaba d'acabar 1r de Primària (currículum de Catalunya).
+Un joc educatiu de matemàtiques en **català**. Va néixer per a les dues filles de
+l'usuari (una acabant Infantil-3 i l'altra acabant 1r de Primària) i des del
+2026-07-13 cada perfil tria el seu **curs** — d'Infantil 3 (P3) fins a 6è de
+Primària — amb l'itinerari de continguts corresponent (vegeu el punt 2).
 
 Tot el joc viu en un únic fitxer estàtic: **`index.html`** (HTML + CSS + JS vanilla, sense
 frameworks ni backend). Funciona obrint el fitxer directament al navegador.
@@ -17,22 +17,48 @@ frameworks ni backend). Funciona obrint el fitxer directament al navegador.
 
 El joc ja té implementat:
 
-1. **Selecció de perfils** ("Qui juga avui?"): cada filla crea un perfil amb nom,
-   mascota (emoji) i grup d'edat (`petits` = 4-5 anys, o `grans` = 6-7 anys).
-2. **Contingut adaptat per grup d'edat** (dos conjunts de generadors de preguntes):
-   - **Grans (6-7 anys)**: sumes fins a 20, restes, número amagat, dobles/meitats,
-     comparar nombres, seqüències, geometria i rellotge. (Especificació completa i
-     exacta a `docs/prompt-original.md`.) Afegits el 2026-07-13: **ordenar 3 nombres**
-     (fins a 20/60/99 segons nivell), **problemes curts amb historieta** (suma o resta,
-     resultat ≤10/15/20) i **monedes** (sempre euros sencers, mai cèntims: només 1 €
-     amb total ≤6 / 1 € i 2 € ≤12 / 1 €, 2 € i bitllet de 5 € ≤20).
-   - **Petits (4-5 anys)**: comptar objectes, sumes/restes petites amb dibuixos,
-     "on n'hi ha més?", formes bàsiques, colors, patrons ABAB i gran/petit.
-     Menys opcions de resposta (2-3) i llindars de temps més generosos.
-     Afegits el 2026-07-13: **busca el número** (aparellar una xifra gran, 1-5/9/10
-     segons nivell) i **problemes curts senzills** (resultat ≤5/8/10, amb dibuixos).
-3. **Dificultat adaptativa** (3 nivells): puja/baixa sola segons encerts, errors i
-   velocitat de resposta. Els llindars de temps depenen del grup d'edat.
+1. **Selecció de perfils** ("Qui juga avui?"): cada nena crea un perfil amb nom,
+   mascota (emoji) i **curs** (`i3`, `i4`, `i5`, `p1`…`p6`). Els perfils antics
+   amb grup d'edat es migren sols en carregar (petits→`i4`, grans→`p1`) i el curs
+   es pot canviar en qualsevol moment des de la zona de pares.
+2. **Itinerari curricular per curs** (LOMLOE: RD 95/2022 d'Infantil i RD 157/2022
+   de Primària; a Catalunya, Decret 175/2022). El RD organitza per cicles; aquí es
+   reparteix per cursos de manera progressiva. La font de veritat és el mapa
+   `GENS` d'`index.html` (una llista de generadors per curs, amb els rangs de cada
+   nivell adaptatiu com a paràmetres). Resum:
+   - **I3**: comptar i buscar números fins a 3/4/5, on n'hi ha més, colors, formes
+     bàsiques, gran/petit, patrons. 2 opcions de resposta.
+   - **I4**: el conjunt "petits" original intacte: comptar fins a 10, sumes/restes
+     visuals petites, formes, colors, patrons, gran/petit, busca el número,
+     problemes ≤10. 2-3 opcions.
+   - **I5**: comptar fins a 20, sumes/restes visuals ≤10, ordenar 3 nombres ≤10,
+     seqüències +1, busca el número fins a 15.
+   - **1r (`p1`)**: el conjunt "grans" original, **INTACTE** (especificació exacta
+     a `docs/prompt-original.md`): sumes/restes ≤20 sense portar, incògnita,
+     dobles/meitats, comparar ≤99, seqüències, geometria, rellotge en punt,
+     ordenar, problemes d'un pas, monedes senceres.
+   - **2n**: sumes/restes fins a 200 (sense portar al nivell 1, portant després),
+     taules del 2/5/10, dobles/meitats ≤50, parells i senars, comparar/ordenar
+     ≤999, seqüències de 2/5/10 en 10, rellotge "i mitja", diners amb bitllets i
+     moneda de 50 cèntims.
+   - **3r**: sumes/restes ≤999 portant, totes les taules, divisió exacta,
+     fraccions (identificar i fracció de quantitat), rellotge digital (quarts i de
+     5 en 5 minuts), mesures (m/cm/km/mm), perímetre, problemes de dos passos.
+   - **4t**: nombres ≤99.999, multiplicació per una xifra amb factors de 2 xifres,
+     divisió amb residu, fraccions (comparar i equivalents), decimals amb dècims,
+     angles (recte/agut/obtús), àrea del rectangle, mesures (kg/g, l/ml, h/min).
+   - **5è**: decimals amb centèsims (comparar/sumar/restar), fraccions (suma amb
+     el mateix denominador, de quantitats), múltiples i divisors, percentatges
+     (50/25/10/20), operacions combinades (prioritat), mitjana, àrea del rectangle
+     i del triangle.
+   - **6è**: operacions combinades amb parèntesis, decimals ×10/×100 i per enter,
+     fraccions amb denominadors diferents senzills, percentatges amb descomptes,
+     proporcionalitat, mitjana, temperatures (enters en context), múltiples i
+     divisors, àrees.
+3. **Dificultat adaptativa** (3 nivells dins de cada curs): puja/baixa sola segons
+   encerts, errors i velocitat de resposta. Els llindars de temps depenen de
+   l'etapa del curs (`TEMPS_ETAPA`: infantil / cicle inicial / mitjà / superior —
+   als cursos alts es dona més temps perquè les operacions són més llargues).
 4. **Persistència per perfil**: estrelles, nivell, millor nivell i historial es desen
    a `localStorage` (clau `mates-profiles`). Si `localStorage` no està disponible o les
    dades són corruptes, el joc arrenca de zero sense petar. Hi ha un botó
@@ -50,21 +76,21 @@ El joc ja té implementat:
    barres per tipus de repte, gràfic d'evolució i un suggeriment "per reforçar"
    (tipus amb ≥5 respostes i <60% d'encerts). Reutilitza `computeStats`,
    `typeBarsHTML` i `drawEvolutionChart`, compartits amb el dashboard de les nenes.
+   Des del 2026-07-13 també permet **canviar el curs** de cada perfil amb un
+   selector (pensat per al pas de curs al setembre).
 9. **Navegació**: botó "↩️ Torna enrere" al formulari de perfil nou (visible només
    si ja existeix algun perfil); el botó 👧 desa i torna a la selecció de jugadora.
 
 ## Restriccions pedagògiques (NO trencar)
 
-Contingut ajustat al sostre de final de 1r de Primària (Decret 175/2022, Generalitat
-de Catalunya). **Explícitament FORA D'ABAST** (no afegir sense demanar-ho):
-
-- Multiplicació, divisió, taules de multiplicar.
-- Sumes/restes "portant-se" en columnes de dos dígits.
-- Rellotge amb "i mitja" o minuts exactes (només hores "en punt").
-- Pentàgons, hexàgons o cossos 3D.
-- Qualsevol missatge negatiu o punitiu en fallar.
-
-Tots els textos, sempre en **català**. To alegre, molt visual, per a nenes petites.
+- **Cada curs ha de respectar el seu sostre curricular**: el mapa `GENS`
+  d'`index.html` és la font de veritat, i el temari exacte de 1r és a
+  `docs/prompt-original.md` (el conjunt de 1r no es toca sense demanar-ho).
+- No avançar contingut de cursos posteriors: res de multiplicar abans de 2n, res
+  de portar-se abans de 2n, res de fraccions abans de 3r, res de decimals abans
+  de 4t, i els nombres negatius només a 6è i en context de temperatura.
+- Tots els textos, sempre en **català**. To alegre, molt visual.
+- Qualsevol missatge negatiu o punitiu en fallar segueix estrictament prohibit.
 
 ## Tasques pendents / properes millores (suggeriments)
 

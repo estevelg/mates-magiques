@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>El Món Màgic dels Números - Final de 1r de Primària</title>
+<title>El Món Màgic dels Números</title>
 <style>
   :root{
     --blau:#4fc3f7;
@@ -497,6 +497,61 @@
     display:inline-flex; align-items:center; justify-content:center;
     flex-shrink:0;
   }
+  .num-card{
+    background:white;
+    border:3px solid #dbe9ff;
+    border-radius:14px;
+    padding:8px 14px;
+    display:inline-block;
+    font-weight:bold;
+  }
+  .num-gran{
+    font-size:3rem;
+    color:#5b4bc4;
+    padding:10px 26px;
+    border-radius:18px;
+  }
+  .fraccio{
+    display:flex;
+    width:min(260px, 90%);
+    height:54px;
+    border:3px solid #5b4bc4;
+    border-radius:12px;
+    overflow:hidden;
+    background:white;
+  }
+  .frac-part{ flex:1; border-right:2px solid #5b4bc4; }
+  .frac-part:last-child{ border-right:none; }
+  .frac-part.plena{ background:var(--rosa); }
+  .coin50{
+    width:44px; height:44px;
+    background:radial-gradient(circle at 35% 30%, #f6d3b5, #d99e66);
+    border-color:#b57b43;
+    color:#6e4a24;
+    font-size:0.8rem;
+  }
+  .rect-fig{
+    background:var(--blau);
+    border-radius:6px;
+    max-width:180px;
+    max-height:120px;
+  }
+  .tri-fig{
+    width:0; height:0;
+    border-left:70px solid transparent;
+    border-right:70px solid transparent;
+    border-bottom:100px solid var(--verd);
+  }
+  .parent-curs{
+    font-family:inherit;
+    font-size:0.8rem;
+    font-weight:bold;
+    color:var(--text);
+    border:2px solid #d7e3ff;
+    border-radius:10px;
+    padding:2px 6px;
+    background:white;
+  }
   .pf-cancel{
     margin-top:8px;
     width:100%;
@@ -576,7 +631,7 @@
       <input class="pf-input" id="pfName" maxlength="15" placeholder="El teu nom">
       <div class="pf-label">Tria la teva mascota</div>
       <div class="pf-row" id="pfAvatars"></div>
-      <div class="pf-label">Quants anys tens?</div>
+      <div class="pf-label">Quin curs fas?</div>
       <div class="pf-row" id="pfGroups"></div>
       <button class="pf-create" id="pfCreate">Crear i jugar! 🎮</button>
       <button class="pf-cancel" id="pfCancel">↩️ Torna enrere</button>
@@ -623,7 +678,7 @@
     <button class="next-btn" id="nextBtn" style="display:none;">Següent 👉</button>
   </div>
 
-  <div class="footer-note">Fet amb 💛 · un joc adaptat per a cada germana</div>
+  <div class="footer-note">Fet amb 💛 · adaptat al curs de cada jugadora (d'Infantil 3 a 6è de Primària)</div>
 </div>
 
 <script>
@@ -645,16 +700,44 @@
   let profiles = [];
   let activeProfile = null;
   const AVATARS = ['🦊','🐰','🐱','🦄','🐼','🐥','🐬','🦋'];
-  const GROUP_LABELS = { petits:'4-5 anys · Infantil', grans:'6-7 anys · 1r Primària' };
 
-  // Llindars de velocitat adaptats a l'edat (les petites necessiten més temps)
-  function fastMs(){ return activeProfile && activeProfile.group==='petits' ? 7000 : 4000; }
-  function slowMs(){ return activeProfile && activeProfile.group==='petits' ? 22000 : 16000; }
+  // Cursos disponibles. Els continguts segueixen la LOMLOE (RD 95/2022 d'Infantil
+  // i RD 157/2022 de Primària, desplegats a Catalunya pel Decret 175/2022). El RD
+  // organitza per cicles; aquí es reparteixen per cursos de manera progressiva, i
+  // dins de cada curs hi ha els 3 nivells adaptatius de sempre (state.level).
+  const CURSOS_ORDRE = ['i3','i4','i5','p1','p2','p3','p4','p5','p6'];
+  const CURSOS = {
+    i3:{ nom:'Infantil 3 (P3)', etapa:'infantil' },
+    i4:{ nom:'Infantil 4 (P4)', etapa:'infantil' },
+    i5:{ nom:'Infantil 5 (P5)', etapa:'infantil' },
+    p1:{ nom:'1r de Primària',  etapa:'inicial'  },
+    p2:{ nom:'2n de Primària',  etapa:'inicial'  },
+    p3:{ nom:'3r de Primària',  etapa:'mitja'    },
+    p4:{ nom:'4t de Primària',  etapa:'mitja'    },
+    p5:{ nom:'5è de Primària',  etapa:'superior' },
+    p6:{ nom:'6è de Primària',  etapa:'superior' },
+  };
+  function nomCurs(id){ return CURSOS[id] ? CURSOS[id].nom : ''; }
+
+  // Llindars de velocitat per etapa: els petits necessiten més temps, i als
+  // cursos alts les operacions són més llargues encara que el nen sigui ràpid.
+  const TEMPS_ETAPA = {
+    infantil:{ rapid:7000,  lent:22000 },
+    inicial: { rapid:4000,  lent:16000 },
+    mitja:   { rapid:6000,  lent:22000 },
+    superior:{ rapid:8000,  lent:28000 },
+  };
+  function etapaActiva(){
+    const c = activeProfile && CURSOS[activeProfile.curs];
+    return c ? c.etapa : 'inicial';
+  }
+  function fastMs(){ return TEMPS_ETAPA[etapaActiva()].rapid; }
+  function slowMs(){ return TEMPS_ETAPA[etapaActiva()].lent; }
 
   const COLORS = ['#ff8fab','#4fc3f7','#ffd54f','#81d4a2','#b39ddb','#ff9e6d'];
   const OBJECT_EMOJIS = ['🍎','⭐','🎈','🐟','🍓','🚗','🐝','🍪','🐸','🌸'];
   const SHAPE_NAMES = {circle:'Cercle', square:'Quadrat', triangle:'Triangle', rectangle:'Rectangle', star:'Estrella'};
-  const TYPE_LABELS = {suma:'Sumes', resta:'Restes', incognita:'Troba el número', dobles:'Dobles i meitats', compara:'Comparar', sequencia:'Seqüències', geometria:'Formes', rellotge:'Rellotge', comptar:'Comptar', colors:'Colors', mida:'Gran i petit', ordenar:'Ordenar nombres', problema:'Problemes', monedes:'Monedes', reconeixer:'Busca el número'};
+  const TYPE_LABELS = {suma:'Sumes', resta:'Restes', incognita:'Troba el número', dobles:'Dobles i meitats', compara:'Comparar', sequencia:'Seqüències', geometria:'Formes', rellotge:'Rellotge', comptar:'Comptar', colors:'Colors', mida:'Gran i petit', ordenar:'Ordenar nombres', problema:'Problemes', monedes:'Monedes', reconeixer:'Busca el número', multiplicacio:'Multiplicar', divisio:'Dividir', fraccions:'Fraccions', decimals:'Decimals', percentatge:'Percentatges', mesura:'Mesures', parell:'Parells i senars', operacions:'Operacions combinades', mitjana:'Mitjana', proporcio:'Proporcions', temperatura:'Temperatura', angles:'Angles', perimetre:'Perímetre i àrea', multiples:'Múltiples i divisors'};
 
   function rand(min,max){ return Math.floor(Math.random()*(max-min+1))+min; }
   function pick(arr){ return arr[rand(0,arr.length-1)]; }
@@ -1290,10 +1373,794 @@
     };
   }
 
-  const GEN_GRANS = [genAddition, genSubtraction, genMissingNumber, genDoubleHalf, genCompare, genSequence, genGeometry, genClock, genOrder, genWordProblem, genMoney];
-  const GEN_PETITS = [genCountP, genCountP, genAddP, genSubP, genCompareGroupsP, genShapeP, genColorP, genPatternP, genBigSmallP, genFindNumberP, genWordProblemP];
+  // ---------- FÀBRIQUES DE GENERADORS PARAMETRITZABLES ----------
+  // Cada fàbrica retorna un generador amb els rangs del curs corresponent.
+  // Els generadors fixos de dalt es conserven tal qual: són exactament el
+  // temari de 1r (genAddition...genMoney) i el d'I4 (genCountP...genWordProblemP).
+
+  function lvl(a){ return a[state.level-1]; }
+
+  function fmtDec(n, decimals){ return n.toFixed(decimals).replace('.', ','); }
+
+  // Opcions de text úniques: la correcta + distractors generats a l'atzar
+  function opcionsText(correcta, distractor, n){
+    const set = new Set([String(correcta)]);
+    let guard = 0;
+    while(set.size<n && guard<300){ set.add(String(distractor())); guard++; }
+    return shuffle(Array.from(set));
+  }
+
+  function portaEnSumar(a,b){
+    while(a>0 || b>0){
+      if(a%10 + b%10 >= 10) return true;
+      a = Math.floor(a/10); b = Math.floor(b/10);
+    }
+    return false;
+  }
+
+  // Resta sense "manllevar": cada xifra de b no supera la corresponent d'a
+  function restaSensePortar(a){
+    let b=0, mult=1, x=a;
+    while(x>0){ b += rand(0, x%10)*mult; x=Math.floor(x/10); mult*=10; }
+    return b;
+  }
+
+  function genComptarF(maxs, nOpts){
+    return function(){
+      const n = rand(1, lvl(maxs));
+      const emoji = pick(OBJECT_EMOJIS);
+      return { type:'comptar', label:'Comptem! 🔢',
+        question:`Compta bé! Quants n'hi ha?`,
+        visualHTML:`<div class="visual-row"><div class="group">${emoji.repeat(n)}</div></div>`,
+        options: uniqueOptions(n, 1, Math.max(4, lvl(maxs)+2), nOpts),
+        answer:n };
+    };
+  }
+
+  function genBuscaNumF(maxs, nOpts){
+    return function(){
+      const n = rand(1, lvl(maxs));
+      return { type:'reconeixer', label:'Busca el número 🔎',
+        question:`Busca el número ${n}! On és?`,
+        visualHTML:`<div class="visual-row"><span class="num-card num-gran">${n}</span></div>`,
+        options: uniqueOptions(n, 1, Math.max(6, lvl(maxs)), nOpts),
+        answer:n };
+    };
+  }
+
+  function genGrupsF(maxs){
+    return function(){
+      const max = lvl(maxs);
+      let a = rand(1,max), b = rand(1,max);
+      while(b===a){ b = rand(1,max); }
+      const emoji = pick(OBJECT_EMOJIS);
+      const askMore = Math.random() < 0.5;
+      const answer = askMore ? (a>b?'A':'B') : (a<b?'A':'B');
+      return { type:'compara', label:'On n\'hi ha més? 👀',
+        question: askMore ? `On hi ha MÉS ${emojiName(emoji)}?` : `On hi ha MENYS ${emojiName(emoji)}?`,
+        visualHTML:`<div class="visual-row">
+            <div style="text-align:center;"><div class="group">${emoji.repeat(a)}</div><div style="margin-top:6px;font-weight:bold;font-size:1.2rem;">A</div></div>
+            <div style="text-align:center;"><div class="group">${emoji.repeat(b)}</div><div style="margin-top:6px;font-weight:bold;font-size:1.2rem;">B</div></div>
+          </div>`,
+        options:['A','B'], answer };
+    };
+  }
+
+  function genSumaVisualF(maxs, nOpts){
+    return function(){
+      const max = lvl(maxs);
+      let a,b;
+      do{ a = rand(1,max-1); b = rand(1,max-1); } while(a+b > max);
+      const emoji = pick(OBJECT_EMOJIS);
+      const answer = a+b;
+      return { type:'suma', label:'Sumes ➕',
+        question:`Quant és ${a} + ${b}? Compta els dibuixos!`,
+        visualHTML:`<div class="visual-row">
+            <div class="group">${emoji.repeat(a)}</div>
+            <span class="op-symbol">+</span>
+            <div class="group">${emoji.repeat(b)}</div>
+          </div>`,
+        options: uniqueOptions(answer, Math.max(1,answer-2), answer+2, nOpts),
+        answer };
+    };
+  }
+
+  function genRestaVisualF(maxs, nOpts){
+    return function(){
+      const a = rand(2, lvl(maxs));
+      const b = rand(1, a);
+      const emoji = pick(OBJECT_EMOJIS);
+      const objs = Array.from({length:a}, (_,i)=> i<b ? `<span style="opacity:0.25;text-decoration:line-through;">${emoji}</span>` : emoji).join('');
+      const answer = a-b;
+      return { type:'resta', label:'Restes ➖',
+        question:`Hi havia ${a} ${emojiName(emoji)}. En marxen ${b}. Quants en queden?`,
+        visualHTML:`<div class="visual-row"><div class="group">${objs}</div></div>`,
+        options: uniqueOptions(answer, 0, answer+3, nOpts),
+        answer };
+    };
+  }
+
+  function genSumaGranF(maxs, portars){
+    return function(){
+      const max = lvl(maxs);
+      const potPortar = lvl(portars);
+      let a, b, guard = 0;
+      do{
+        a = rand(2, max-1);
+        b = rand(1, max-a);
+        guard++;
+      } while(!potPortar && portaEnSumar(a,b) && guard<300);
+      const answer = a+b;
+      const spread = Math.max(5, Math.round(answer*0.15));
+      return { type:'suma', label:'Sumes ➕',
+        question:`Quant és ${a} + ${b}?`,
+        visualHTML:`<div class="visual-row">${placeValueHTML(a)}<span class="op-symbol">+</span>${placeValueHTML(b)}</div>`,
+        options: uniqueOptions(answer, Math.max(0,answer-spread), answer+spread, 4),
+        answer };
+    };
+  }
+
+  function genRestaGranF(maxs, portars){
+    return function(){
+      const max = lvl(maxs);
+      const potPortar = lvl(portars);
+      let a, b, guard = 0;
+      do{
+        a = rand(11, max);
+        b = potPortar ? rand(1, a-1) : restaSensePortar(a);
+        guard++;
+      } while(b===0 && guard<50);
+      if(b===0) b = 1;
+      const answer = a-b;
+      const spread = Math.max(5, Math.round(Math.max(answer,10)*0.15));
+      return { type:'resta', label:'Restes ➖',
+        question:`Quant és ${a} − ${b}?`,
+        visualHTML:`<div class="visual-row">${placeValueHTML(a)}<span class="op-symbol">−</span>${placeValueHTML(b)}</div>`,
+        options: uniqueOptions(answer, Math.max(0,answer-spread), answer+spread, 4),
+        answer };
+    };
+  }
+
+  function genDobleMeitatF(maxs){
+    return function(){
+      const max = lvl(maxs);
+      const esDoble = Math.random()<0.5;
+      const n = rand(1, Math.floor(max/2));
+      const answer = esDoble ? n*2 : n;
+      const mostrat = esDoble ? n : n*2;
+      return { type:'dobles', label:'Dobles i meitats 🔁',
+        question: esDoble ? `Quin és el doble de ${mostrat}?` : `Quina és la meitat de ${mostrat}?`,
+        visualHTML:`<div class="visual-row"><span class="num-card">${esDoble ? `${mostrat} + ${mostrat}` : `${mostrat} ÷ 2`}</span></div>`,
+        options: uniqueOptions(answer, Math.max(0,answer-6), answer+6, 4),
+        answer };
+    };
+  }
+
+  function genComparaNumF(maxs){
+    return function(){
+      const max = lvl(maxs);
+      let a = rand(1,max), b = rand(1,max);
+      while(b===a){ b = rand(1,max); }
+      const askMore = Math.random() < 0.5;
+      const answer = askMore ? (a>b?'A':'B') : (a<b?'A':'B');
+      return { type:'compara', label:'Compara nombres 🔍',
+        question: askMore ? `Quin número és MÉS GRAN?` : `Quin número és MÉS PETIT?`,
+        visualHTML:`<div class="visual-row">
+            <div style="text-align:center;">${placeValueHTML(a)}<div style="margin-top:6px;font-weight:bold;">A</div></div>
+            <span class="op-symbol">vs</span>
+            <div style="text-align:center;">${placeValueHTML(b)}<div style="margin-top:6px;font-weight:bold;">B</div></div>
+          </div>`,
+        options:['A','B'], answer };
+    };
+  }
+
+  function genOrdenaF(maxs, nOpts){
+    return function(){
+      const max = lvl(maxs);
+      const nums = new Set();
+      while(nums.size<3){ nums.add(rand(1,max)); }
+      const ordenats = Array.from(nums).sort((x,y)=>x-y);
+      const desordenats = shuffle(ordenats);
+      const fmt = a => a.join(' → ');
+      const answer = fmt(ordenats);
+      const [p,q,r] = ordenats;
+      const perms = [[p,q,r],[p,r,q],[q,p,r],[q,r,p],[r,p,q],[r,q,p]].map(fmt);
+      const dolentes = shuffle(perms.filter(s=>s!==answer)).slice(0, nOpts-1);
+      return { type:'ordenar', label:'Ordenar nombres 📶',
+        question:'Ordena aquests nombres de més petit a més gran!',
+        visualHTML:`<div class="visual-row">${desordenats.map(n=>`<span class="num-card">${n}</span>`).join(' ')}</div>`,
+        options: shuffle([answer, ...dolentes]),
+        answer };
+    };
+  }
+
+  function genSeqNumF(stepsPerLvl, startMaxs, nOpts){
+    return function(){
+      const step = pick(lvl(stepsPerLvl));
+      const start = rand(1, lvl(startMaxs)) + (step<0 ? Math.abs(step)*5 : 0);
+      const seq = [];
+      let val = start;
+      for(let i=0;i<4;i++){ seq.push(val); val += step; }
+      const answer = val;
+      const marge = Math.abs(step)*2 + 2;
+      return { type:'sequencia', label:'Seqüències lògiques 🔢',
+        question:'Quin número segueix?',
+        visualHTML:`<div class="visual-row">${seq.map(n=>`<span class="num-card">${n}</span>`).join('<span class="op-symbol">→</span>')}<span class="op-symbol">→</span><span class="num-card" style="background:#fff3cd;border-color:#e8c25a;border-style:dashed;">?</span></div>`,
+        options: uniqueOptions(answer, Math.max(0,answer-marge), answer+marge, nOpts),
+        answer };
+    };
+  }
+
+  function genMultF(cfgs){
+    return function(){
+      const cfg = lvl(cfgs);
+      let a, b;
+      if(cfg.dosXifres){ a = rand(11, cfg.dosXifres); b = rand(2, 9); }
+      else { a = pick(cfg.taules); b = rand(2, 10); }
+      const answer = a*b;
+      let visual = '';
+      if(answer<=20 && !cfg.dosXifres){
+        const emoji = pick(OBJECT_EMOJIS);
+        visual = `<div class="visual-row">${Array.from({length:b},()=>`<div class="group">${emoji.repeat(a)}</div>`).join('')}</div>`;
+      } else {
+        visual = `<div class="visual-row"><span class="num-card">${a} × ${b}</span></div>`;
+      }
+      const spread = Math.max(6, Math.round(answer*0.2));
+      return { type:'multiplicacio', label:'Multiplicar ✖️',
+        question:`Quant és ${a} × ${b}?`,
+        visualHTML: visual,
+        options: uniqueOptions(answer, Math.max(0,answer-spread), answer+spread, 4),
+        answer };
+    };
+  }
+
+  function genDivF(residus){
+    return function(){
+      const ambResidu = lvl(residus) && Math.random()<0.5;
+      const d = rand(2, 9);
+      const q = rand(2, 10);
+      if(ambResidu){
+        const r = rand(1, d-1);
+        const total = d*q + r;
+        const emoji = pick(OBJECT_EMOJIS);
+        return { type:'divisio', label:'Dividir ➗',
+          question:`Repartim ${total} ${emojiName(emoji)} entre ${d} nens a parts iguals. Quants en sobren?`,
+          visualHTML:`<div class="visual-row"><span class="num-card">${total} ÷ ${d}</span></div>`,
+          options: uniqueOptions(r, 0, d-1, Math.min(4, d)),
+          answer:r };
+      }
+      const total = d*q;
+      return { type:'divisio', label:'Dividir ➗',
+        question:`Quant és ${total} ÷ ${d}?`,
+        visualHTML:`<div class="visual-row"><span class="num-card">${total} ÷ ${d}</span></div>`,
+        options: uniqueOptions(q, Math.max(1,q-4), q+4, 4),
+        answer:q };
+    };
+  }
+
+  function genParellSenarF(maxs){
+    return function(){
+      const max = lvl(maxs);
+      const buscaParell = Math.random()<0.5;
+      const base = rand(1, Math.floor(max/2)-1);
+      const answer = buscaParell ? base*2 : base*2+1;
+      const dolents = new Set();
+      while(dolents.size<3){
+        const n = rand(1, Math.floor(max/2))*2 + (buscaParell ? 1 : 0);
+        if(n!==answer && n<=max+1) dolents.add(n);
+      }
+      return { type:'parell', label:'Parells i senars 🎭',
+        question: buscaParell ? 'Quin d\'aquests nombres és PARELL?' : 'Quin d\'aquests nombres és SENAR?',
+        visualHTML:'',
+        options: shuffle([answer, ...dolents]),
+        answer };
+    };
+  }
+
+  function genRellotgeF(modes){
+    return function(){
+      const mode = lvl(modes);
+      const hour = rand(1,12);
+      let minuts, options, answer;
+      if(mode==='enpunt' || (mode==='mitja' && Math.random()<0.5)){
+        minuts = 0;
+        answer = `Les ${hour} en punt`;
+        options = opcionsText(answer, ()=>{
+          const h = rand(1,12);
+          return Math.random()<0.5 || mode==='enpunt' ? `Les ${h} en punt` : `Les ${h} i mitja`;
+        }, 4);
+      } else if(mode==='mitja'){
+        minuts = 30;
+        answer = `Les ${hour} i mitja`;
+        options = opcionsText(answer, ()=>{
+          const h = rand(1,12);
+          return Math.random()<0.5 ? `Les ${h} i mitja` : `Les ${h} en punt`;
+        }, 4);
+      } else {
+        minuts = mode==='quarts' ? pick([0,15,30,45]) : rand(0,11)*5;
+        const fmtHora = (h,m)=>`${h}:${String(m).padStart(2,'0')}`;
+        answer = fmtHora(hour, minuts);
+        options = opcionsText(answer, ()=>{
+          const m = mode==='quarts' ? pick([0,15,30,45]) : rand(0,11)*5;
+          return fmtHora(rand(1,12), m);
+        }, 4);
+      }
+      const hourAngle = (hour%12)*30 + minuts*0.5;
+      const svg = buildClockSVG(hourAngle, minuts*6);
+      return { type:'rellotge', label:'Quina hora és? 🕐',
+        question:'Mira el rellotge. Quina hora marca?',
+        visualHTML:`<div class="shape-display" style="width:auto;height:auto;">${svg}</div>`,
+        options, answer };
+    };
+  }
+
+  function genDinersF(){
+    return function(){
+      // Nivell 1: euros sencers fins a 20; nivell 2: fins a 50 amb bitllets;
+      // nivell 3: també mitja moneda de 50 cèntims.
+      const nivell = state.level;
+      const parts = [];
+      let total = 0;
+      const objectiu = nivell===1 ? rand(3,20) : rand(8,50);
+      let resta = objectiu;
+      const valors = nivell===1 ? [5,2,1] : [20,10,5,2,1];
+      valors.forEach(v=>{
+        while(resta>=v && parts.length<9){
+          if(v>2) parts.push(`<div class="bill">${v} €</div>`);
+          else parts.push(`<div class="coin${v===2?' coin2':''}">${v} €</div>`);
+          resta -= v; total += v;
+        }
+      });
+      let ambMig = false;
+      if(nivell===3 && Math.random()<0.6){
+        parts.push('<div class="coin coin50">50 c</div>');
+        ambMig = true;
+      }
+      const fmtDiners = (eur, mig)=> mig ? `${eur} € i 50 cèntims` : `${eur} €`;
+      const answer = fmtDiners(total, ambMig);
+      const options = opcionsText(answer, ()=>{
+        const e = Math.max(1, total + rand(-4,4));
+        return fmtDiners(e, nivell===3 ? Math.random()<0.5 : false);
+      }, 4);
+      return { type:'monedes', label:'Monedes 💰',
+        question:'Quants diners hi ha en total?',
+        visualHTML:`<div class="visual-row"><div class="group" style="max-width:360px;">${shuffle(parts).join('')}</div></div>`,
+        options, answer };
+    };
+  }
+
+  function fraccioHTML(num, den){
+    let cells = '';
+    for(let i=0;i<den;i++){ cells += `<div class="frac-part${i<num?' plena':''}"></div>`; }
+    return `<div class="visual-row"><div class="fraccio">${cells}</div></div>`;
+  }
+
+  function genFraccioF(modes){
+    return function(){
+      const mode = lvl(modes);
+      const fracDistractor = ()=>{ const d = rand(2,8); return `${rand(1,d-1)}/${d}`; };
+      if(mode==='identificar'){
+        const den = pick([2,3,4,6,8].slice(0, 2+state.level));
+        const num = rand(1, den-1);
+        const answer = `${num}/${den}`;
+        return { type:'fraccions', label:'Fraccions 🍕',
+          question:'Quina fracció està pintada?',
+          visualHTML: fraccioHTML(num, den),
+          options: opcionsText(answer, fracDistractor, 4),
+          answer };
+      }
+      if(mode==='comparar'){
+        const den = pick([3,4,5,6,8]);
+        let a = rand(1,den-1), b = rand(1,den-1);
+        while(b===a){ b = rand(1,den-1); }
+        const answer = a>b ? `${a}/${den}` : `${b}/${den}`;
+        return { type:'fraccions', label:'Fraccions 🍕',
+          question:'Quina fracció és més gran?',
+          visualHTML:`<div class="visual-row"><span class="num-card">${a}/${den}</span><span class="op-symbol">vs</span><span class="num-card">${b}/${den}</span></div>`,
+          options: shuffle([`${a}/${den}`, `${b}/${den}`]),
+          answer };
+      }
+      if(mode==='equivalent'){
+        const [num, den] = pick([[1,2],[1,3],[1,4],[2,3],[3,4]]);
+        const k = pick([2,3]);
+        const answer = `${num*k}/${den*k}`;
+        return { type:'fraccions', label:'Fraccions 🍕',
+          question:`Quina fracció és equivalent a ${num}/${den}?`,
+          visualHTML: fraccioHTML(num, den),
+          options: opcionsText(answer, fracDistractor, 4),
+          answer };
+      }
+      if(mode==='suma'){
+        const den = pick([4,5,6,8]);
+        const a = rand(1, den-2);
+        const b = rand(1, den-a-1);
+        const answer = `${a+b}/${den}`;
+        return { type:'fraccions', label:'Fraccions 🍕',
+          question:`Quant és ${a}/${den} + ${b}/${den}?`,
+          visualHTML:'',
+          options: opcionsText(answer, ()=>`${rand(1,den)}/${den}`, 4),
+          answer };
+      }
+      if(mode==='sumaDif'){
+        const den1 = pick([2,3,4]);
+        const den2 = den1*2;
+        const a = rand(1, den1-1) || 1;
+        const b = rand(1, den2 - a*2 - 1 > 0 ? den2 - a*2 - 1 : 1);
+        const answer = `${a*2+b}/${den2}`;
+        return { type:'fraccions', label:'Fraccions 🍕',
+          question:`Quant és ${a}/${den1} + ${b}/${den2}?`,
+          visualHTML:'',
+          options: opcionsText(answer, ()=>`${rand(1,den2)}/${den2}`, 4),
+          answer };
+      }
+      // mode 'quantitat': fracció d'una quantitat
+      const den = pick([2,3,4,5].slice(0, 1+state.level));
+      const num = state.level===3 ? rand(1,den-1) : 1;
+      const total = den * rand(2,8);
+      const answer = (total/den)*num;
+      return { type:'fraccions', label:'Fraccions 🍕',
+        question:`Quant és ${num}/${den} de ${total}?`,
+        visualHTML: fraccioHTML(num, den),
+        options: uniqueOptions(answer, Math.max(1,answer-5), answer+5, 4),
+        answer };
+    };
+  }
+
+  function genDecimalsF(modes, xifres){
+    return function(){
+      const mode = lvl(modes);
+      const escala = xifres===2 ? 100 : 10;
+      const fmtE = v => fmtDec(v/escala, xifres);
+      if(mode==='comparar'){
+        let a = rand(11, 9*escala), b = rand(11, 9*escala);
+        while(b===a){ b = rand(11, 9*escala); }
+        const askMore = Math.random()<0.5;
+        const answer = askMore ? (a>b?'A':'B') : (a<b?'A':'B');
+        return { type:'decimals', label:'Decimals 🔟',
+          question: askMore ? 'Quin número és MÉS GRAN?' : 'Quin número és MÉS PETIT?',
+          visualHTML:`<div class="visual-row">
+              <div style="text-align:center;"><span class="num-card">${fmtE(a)}</span><div style="margin-top:6px;font-weight:bold;">A</div></div>
+              <span class="op-symbol">vs</span>
+              <div style="text-align:center;"><span class="num-card">${fmtE(b)}</span><div style="margin-top:6px;font-weight:bold;">B</div></div>
+            </div>`,
+          options:['A','B'], answer };
+      }
+      if(mode==='x10'){
+        const v = rand(11, 99*Math.max(1,escala/10));
+        const factor = pick([10,100]);
+        const answer = fmtDec(v*factor/escala, xifres);
+        return { type:'decimals', label:'Decimals 🔟',
+          question:`Quant és ${fmtE(v)} × ${factor}?`,
+          visualHTML:'',
+          options: opcionsText(answer, ()=>fmtDec(v*pick([1,10,100,1000])/escala, xifres), 4),
+          answer };
+      }
+      if(mode==='multEnter'){
+        const v = rand(2, 9*escala/10);
+        const b = rand(2, 9);
+        const answer = fmtE(v*b);
+        return { type:'decimals', label:'Decimals 🔟',
+          question:`Quant és ${fmtE(v)} × ${b}?`,
+          visualHTML:'',
+          options: opcionsText(answer, ()=>fmtE(Math.max(1, v*b + rand(-2,2)*escala/10)), 4),
+          answer };
+      }
+      // sumar o restar
+      const esSuma = mode==='sumar';
+      let a = rand(11, 5*escala), b = rand(11, 4*escala);
+      if(!esSuma && b>a){ const t=a; a=b; b=t; }
+      const resultat = esSuma ? a+b : a-b;
+      const answer = fmtE(resultat);
+      return { type:'decimals', label:'Decimals 🔟',
+        question:`Quant és ${fmtE(a)} ${esSuma?'+':'−'} ${fmtE(b)}?`,
+        visualHTML:`<div class="visual-row"><span class="num-card">${fmtE(a)} ${esSuma?'+':'−'} ${fmtE(b)}</span></div>`,
+        options: opcionsText(answer, ()=>fmtE(Math.max(1, resultat + rand(-15,15))), 4),
+        answer };
+    };
+  }
+
+  function genPercentF(pctsPerLvl, ambDescompte){
+    return function(){
+      const pct = pick(lvl(pctsPerLvl));
+      // base sempre divisible perquè el resultat sigui enter
+      const multiple = pct===50 ? 2 : (pct===25 || pct===75 ? 4 : 10);
+      const base = multiple * rand(2, 12);
+      const part = base*pct/100;
+      if(ambDescompte && state.level>=2 && Math.random()<0.5){
+        const answer = base - part;
+        return { type:'percentatge', label:'Percentatges 💯',
+          question:`Un joc de ${base} € té un ${pct}% de descompte. Quant costa ara?`,
+          visualHTML:`<div class="visual-row"><span class="num-card">${base} € − ${pct}%</span></div>`,
+          options: uniqueOptions(answer, Math.max(1,answer-8), answer+8, 4),
+          answer };
+      }
+      return { type:'percentatge', label:'Percentatges 💯',
+        question:`Quant és el ${pct}% de ${base}?`,
+        visualHTML:`<div class="visual-row"><span class="num-card">${pct}% de ${base}</span></div>`,
+        options: uniqueOptions(part, Math.max(1,part-8), part+8, 4),
+        answer:part };
+    };
+  }
+
+  const UNITATS = [
+    ['metres','centímetres',100,'m'],
+    ['quilòmetres','metres',1000,'km'],
+    ['quilograms','grams',1000,'kg'],
+    ['litres','mil·lilitres',1000,'l'],
+    ['hores','minuts',60,'h'],
+    ['centímetres','mil·límetres',10,'cm'],
+  ];
+  function genMesuraF(indexosPerLvl){
+    return function(){
+      const [gran, petita, factor] = UNITATS[pick(lvl(indexosPerLvl))];
+      const n = rand(2, 9);
+      const answer = n*factor;
+      const options = opcionsText(answer, ()=>{
+        return pick([n*factor*10, Math.max(1,Math.round(n*factor/10)), (n+rand(1,3))*factor, (n-1)*factor || factor]);
+      }, 4);
+      return { type:'mesura', label:'Mesures 📏',
+        question:`Quants ${petita} són ${n} ${gran}?`,
+        visualHTML:`<div class="visual-row"><span class="num-card">${n} ${gran} = ? ${petita}</span></div>`,
+        options: options.map(Number).filter(x=>!Number.isNaN(x)).length===options.length ? options.map(Number) : options,
+        answer };
+    };
+  }
+
+  function genPerimetreAreaF(modes){
+    return function(){
+      const mode = lvl(modes);
+      if(mode==='areaTriangle'){
+        const b = rand(2,10)*2;
+        const h = rand(2,10);
+        const answer = b*h/2;
+        return { type:'perimetre', label:'Perímetre i àrea 📐',
+          question:`Un triangle té una base de ${b} cm i una altura de ${h} cm. Quina és la seva àrea, en cm²?`,
+          visualHTML:`<div class="visual-row"><div class="tri-fig"></div></div>`,
+          options: uniqueOptions(answer, Math.max(1,answer-10), answer+10, 4),
+          answer };
+      }
+      const w = rand(3,12), h = rand(2, w);
+      if(mode==='area'){
+        const answer = w*h;
+        return { type:'perimetre', label:'Perímetre i àrea 📐',
+          question:`Un rectangle fa ${w} cm de llarg i ${h} cm d'ample. Quina és la seva àrea, en cm²?`,
+          visualHTML:`<div class="visual-row"><div class="rect-fig" style="width:${w*14}px;height:${h*14}px;"></div></div>`,
+          options: uniqueOptions(answer, Math.max(1,answer-10), answer+10, 4),
+          answer };
+      }
+      const answer = 2*(w+h);
+      return { type:'perimetre', label:'Perímetre i àrea 📐',
+        question:`Un rectangle fa ${w} cm de llarg i ${h} cm d'ample. Quin és el seu perímetre, en cm?`,
+        visualHTML:`<div class="visual-row"><div class="rect-fig" style="width:${w*14}px;height:${h*14}px;"></div></div>`,
+        options: uniqueOptions(answer, Math.max(1,answer-8), answer+8, 4),
+        answer };
+    };
+  }
+
+  function angleSVG(graus){
+    const rad = graus*Math.PI/180;
+    const x = 10 + 45*Math.cos(rad), y = 60 - 45*Math.sin(rad);
+    return `<svg viewBox="0 0 100 70" width="150" height="105">
+      <line x1="10" y1="60" x2="90" y2="60" stroke="#5b4bc4" stroke-width="4" stroke-linecap="round"/>
+      <line x1="10" y1="60" x2="${x.toFixed(1)}" y2="${y.toFixed(1)}" stroke="#ff8fab" stroke-width="4" stroke-linecap="round"/>
+    </svg>`;
+  }
+  function genAngleF(){
+    return function(){
+      const tipus = pick(['Recte','Agut','Obtús']);
+      const graus = tipus==='Recte' ? 90 : (tipus==='Agut' ? rand(25,65) : rand(115,155));
+      return { type:'angles', label:'Angles 📐',
+        question:'Com és aquest angle?',
+        visualHTML:`<div class="visual-row">${angleSVG(graus)}</div>`,
+        options: shuffle(['Recte','Agut','Obtús']),
+        answer: tipus };
+    };
+  }
+
+  function genOpsCombF(parentesisDes){
+    return function(){
+      const a = rand(2,9), b = rand(2,9), c = rand(2,9);
+      const ambParentesis = state.level >= parentesisDes;
+      const answer = ambParentesis ? (a+b)*c : a + b*c;
+      const trampa = ambParentesis ? a + b*c : (a+b)*c; // l'error clàssic de prioritat
+      const expr = ambParentesis ? `(${a} + ${b}) × ${c}` : `${a} + ${b} × ${c}`;
+      const options = opcionsText(answer, ()=>pick([trampa, answer+rand(1,6), Math.max(1,answer-rand(1,6))]), 4).map(Number);
+      return { type:'operacions', label:'Operacions combinades 🧮',
+        question:`Quant és ${expr}?`,
+        visualHTML:`<div class="visual-row"><span class="num-card">${expr}</span></div>`,
+        options, answer };
+    };
+  }
+
+  function genMitjanaF(quantsPerLvl){
+    return function(){
+      const k = lvl(quantsPerLvl);
+      const m = rand(3,9);
+      const valors = k===3 ? [m-1, m, m+1] : [m-2, m-1, m+1, m+2];
+      return { type:'mitjana', label:'La mitjana 📊',
+        question:`Aquestes són les notes d'en Roc: ${shuffle(valors).join(', ')}. Quina és la mitjana?`,
+        visualHTML:'',
+        options: uniqueOptions(m, Math.max(1,m-3), m+3, 4),
+        answer:m };
+    };
+  }
+
+  function genProporcioF(){
+    return function(){
+      const preuUnitat = rand(2,9);
+      const n1 = rand(2,5);
+      const n2 = rand(n1+1, 9);
+      const emoji = pick(OBJECT_EMOJIS);
+      const answer = n2*preuUnitat;
+      return { type:'proporcio', label:'Proporcions ⚖️',
+        question:`${n1} ${emojiName(emoji)} costen ${n1*preuUnitat} €. Quant costen ${n2} ${emojiName(emoji)}?`,
+        visualHTML:`<div class="visual-row"><div class="group">${emoji.repeat(n1)}</div><span class="op-symbol">→</span><span class="num-card">${n1*preuUnitat} €</span></div>`,
+        options: uniqueOptions(answer, Math.max(1,answer-8), answer+8, 4).map(n=>n),
+        answer };
+    };
+  }
+
+  function genTemperaturaF(){
+    return function(){
+      const t0 = rand(-9,-1);
+      const puja = Math.random()<0.7;
+      const delta = puja ? rand(2,12) : rand(1, 9+t0+9);
+      const answer = puja ? t0+delta : t0-Math.max(1,rand(1,5));
+      const deltaReal = puja ? delta : t0-answer;
+      return { type:'temperatura', label:'Temperatures 🌡️',
+        question:`El termòmetre marcava ${t0} °C i la temperatura ${puja?'puja':'baixa'} ${deltaReal} graus. Quina temperatura marca ara?`,
+        visualHTML:`<div class="visual-row"><span class="num-card">${t0} °C ${puja?'+':'−'} ${deltaReal}</span></div>`,
+        options: uniqueOptions(answer, answer-4, answer+4, 4),
+        answer };
+    };
+  }
+
+  function genMultiplesDivisorsF(){
+    return function(){
+      if(Math.random()<0.5){
+        const base = rand(3,9);
+        const answer = base*rand(3,9);
+        const dolents = new Set();
+        while(dolents.size<3){
+          const n = rand(4,80);
+          if(n%base!==0 && n!==answer) dolents.add(n);
+        }
+        return { type:'multiples', label:'Múltiples i divisors 🧩',
+          question:`Quin d'aquests nombres és múltiple de ${base}?`,
+          visualHTML:'',
+          options: shuffle([answer, ...dolents]),
+          answer };
+      }
+      const n = pick([12,18,20,24,30,36]);
+      const divisors = [];
+      for(let d=2; d<n; d++){ if(n%d===0) divisors.push(d); }
+      const answer = pick(divisors);
+      const dolents = new Set();
+      while(dolents.size<3){
+        const d = rand(2, n-1);
+        if(n%d!==0 && d!==answer) dolents.add(d);
+      }
+      return { type:'multiples', label:'Múltiples i divisors 🧩',
+        question:`Quin d'aquests nombres és divisor de ${n}?`,
+        visualHTML:'',
+        options: shuffle([answer, ...dolents]),
+        answer };
+    };
+  }
+
+  function genProblemaF(maxs, nOpts){
+    return function(){ return makeWordProblem(lvl(maxs), nOpts); };
+  }
+
+  function genProblema2F(maxUnitats){
+    return function(){
+      const capses = rand(2, 5);
+      const perCapsa = rand(2, Math.min(9, Math.floor(lvl(maxUnitats)/capses)));
+      const treure = rand(1, Math.min(5, capses*perCapsa-1));
+      const emoji = pick(OBJECT_EMOJIS);
+      const nom = emojiName(emoji);
+      const quants = FEMENINS_PLURAL.includes(nom) ? 'Quantes' : 'Quants';
+      const answer = capses*perCapsa - treure;
+      return { type:'problema', label:'Problemes 📖',
+        question:`Tenim ${capses} capses amb ${perCapsa} ${nom} cada una, i en traiem ${treure}. ${quants} en queden?`,
+        visualHTML:`<div class="visual-row">${Array.from({length:capses},()=>`<div class="group">${emoji.repeat(perCapsa)}</div>`).join('')}</div>`,
+        options: uniqueOptions(answer, Math.max(0,answer-5), answer+5, 4),
+        answer };
+    };
+  }
+
+  // ---------- ITINERARI PER CURS ----------
+  const GENS = {
+    i3: [
+      genComptarF([3,4,5],2), genComptarF([3,4,5],2),
+      genBuscaNumF([3,4,5],2),
+      genGrupsF([3,4,5]),
+      genColorP, genBigSmallP, genShapeP, genPatternP,
+    ],
+    // I4 (4-5 anys): el conjunt "petits" original, sense canvis
+    i4: [genCountP, genCountP, genAddP, genSubP, genCompareGroupsP, genShapeP, genColorP, genPatternP, genBigSmallP, genFindNumberP, genWordProblemP],
+    i5: [
+      genComptarF([10,15,20],3),
+      genBuscaNumF([10,12,15],3),
+      genSumaVisualF([6,8,10],3),
+      genRestaVisualF([5,8,10],3),
+      genGrupsF([6,8,10]),
+      genOrdenaF([6,9,10],3),
+      genSeqNumF([[1],[1],[1,2]],[5,8,10],3),
+      genShapeP, genPatternP, genWordProblemP,
+    ],
+    // 1r: el conjunt "grans" original, sense canvis (espec. a docs/prompt-original.md)
+    p1: [genAddition, genSubtraction, genMissingNumber, genDoubleHalf, genCompare, genSequence, genGeometry, genClock, genOrder, genWordProblem, genMoney],
+    p2: [
+      genSumaGranF([50,99,200],[false,true,true]),
+      genRestaGranF([50,99,200],[false,true,true]),
+      genMultF([{taules:[2]},{taules:[2,5,10]},{taules:[2,3,5,10]}]),
+      genDobleMeitatF([20,30,50]),
+      genComparaNumF([99,500,999]),
+      genOrdenaF([99,500,999],4),
+      genSeqNumF([[2,10],[2,5,10],[5,10,-2]],[30,60,100],4),
+      genParellSenarF([20,50,100]),
+      genRellotgeF(['enpunt','mitja','mitja']),
+      genDinersF(),
+      genProblemaF([20,50,100],4),
+    ],
+    p3: [
+      genSumaGranF([200,500,999],[true,true,true]),
+      genRestaGranF([200,500,999],[true,true,true]),
+      genMultF([{taules:[2,3,4,5]},{taules:[2,3,4,5,6,7,8,9]},{taules:[6,7,8,9],dosXifres:0}]),
+      genDivF([false,false,false]),
+      genFraccioF(['identificar','identificar','quantitat']),
+      genRellotgeF(['mitja','quarts','min5']),
+      genMesuraF([[0],[0,5],[0,1,5]]),
+      genPerimetreAreaF(['perimetre','perimetre','perimetre']),
+      genOrdenaF([999,5000,9999],4),
+      genSeqNumF([[5,10],[10,25],[25,50,100]],[100,200,500],4),
+      genProblemaF([100,200,500],4),
+      genProblema2F([20,30,45]),
+    ],
+    p4: [
+      genSumaGranF([999,5000,9999],[true,true,true]),
+      genRestaGranF([999,5000,9999],[true,true,true]),
+      genMultF([{taules:[3,4,6,7,8,9]},{dosXifres:30},{dosXifres:99}]),
+      genDivF([false,true,true]),
+      genFraccioF(['comparar','equivalent','quantitat']),
+      genDecimalsF(['comparar','comparar','sumar'],1),
+      genAngleF(),
+      genPerimetreAreaF(['perimetre','area','area']),
+      genRellotgeF(['quarts','min5','min5']),
+      genMesuraF([[0,2],[0,2,3],[1,2,3,4]]),
+      genComparaNumF([9999,50000,99999]),
+      genProblema2F([30,45,45]),
+    ],
+    p5: [
+      genDecimalsF(['comparar','sumar','restar'],2),
+      genFraccioF(['suma','quantitat','comparar']),
+      genMultiplesDivisorsF(),
+      genPercentF([[50],[50,25,10],[50,25,10,20]],false),
+      genOpsCombF(3),
+      genMitjanaF([3,3,4]),
+      genPerimetreAreaF(['area','area','areaTriangle']),
+      genMultF([{dosXifres:50},{dosXifres:99},{dosXifres:99}]),
+      genDivF([true,true,true]),
+      genComparaNumF([99999,500000,999999]),
+      genProblema2F([45,45,45]),
+    ],
+    p6: [
+      genOpsCombF(2),
+      genDecimalsF(['sumar','x10','multEnter'],2),
+      genFraccioF(['suma','quantitat','sumaDif']),
+      genPercentF([[50,25],[50,25,10,20],[10,20,25,50,75]],true),
+      genProporcioF(),
+      genMitjanaF([3,4,4]),
+      genTemperaturaF(),
+      genMultiplesDivisorsF(),
+      genPerimetreAreaF(['area','areaTriangle','areaTriangle']),
+      genProblema2F([45,45,45]),
+    ],
+  };
   function currentGenerators(){
-    return activeProfile && activeProfile.group==='petits' ? GEN_PETITS : GEN_GRANS;
+    const gens = activeProfile && GENS[activeProfile.curs];
+    return gens || GENS.p1;
   }
   let lastType = null;
 
@@ -1543,7 +2410,10 @@
           <span class="parent-avatar">${p.avatar}</span>
           <div>
             <div class="parent-name">${p.name} · ⭐ ${p.stars||0} · Nivell ${p.level||1}</div>
-            <div class="parent-sub">${GROUP_LABELS[p.group]||''} · Última partida: ${tempsRelatiu(p.lastPlayed)}</div>
+            <div class="parent-sub">Última partida: ${tempsRelatiu(p.lastPlayed)}</div>
+            <div class="parent-sub">Curs:
+              <select class="parent-curs" data-idx="${idx}">${CURSOS_ORDRE.map(c=>`<option value="${c}"${c===p.curs?' selected':''}>${CURSOS[c].nom}</option>`).join('')}</select>
+            </div>
           </div>
         </div>
         <div class="stat-grid">
@@ -1562,6 +2432,13 @@
     });
     profiles.forEach((p, idx)=>{
       drawEvolutionChart(document.getElementById('parentChart'+idx), p.history || []);
+    });
+    // Canviar el curs d'un perfil (p. ex. quan passa de curs al setembre)
+    wrap.querySelectorAll('.parent-curs').forEach(sel=>{
+      sel.onchange = ()=>{
+        profiles[Number(sel.dataset.idx)].curs = sel.value;
+        saveProfiles();
+      };
     });
   }
 
@@ -1582,7 +2459,20 @@
       const raw = localStorage.getItem(STORAGE_KEY);
       if(raw){
         const dades = JSON.parse(raw);
-        if(Array.isArray(dades)) return dades;
+        if(Array.isArray(dades)){
+          // Migració dels perfils antics, que tenien grup d'edat en lloc de curs
+          let calDesar = false;
+          dades.forEach(p=>{
+            if(p && !CURSOS[p.curs]){
+              p.curs = p.group==='petits' ? 'i4' : 'p1';
+              calDesar = true;
+            }
+          });
+          if(calDesar){
+            try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(dades)); }catch(e){}
+          }
+          return dades;
+        }
       }
     }catch(e){ /* primera vegada o dades corruptes: comencem de zero */ }
     return [];
@@ -1621,7 +2511,7 @@
       card.className = 'profile-card';
       card.innerHTML = `<div class="profile-avatar">${p.avatar}</div>
         <div class="profile-name">${p.name}</div>
-        <div class="profile-age">${GROUP_LABELS[p.group]||''}</div>
+        <div class="profile-age">${nomCurs(p.curs)}</div>
         <div class="profile-stars">⭐ ${p.stars||0}</div>`;
       card.onclick = ()=> startGame(p);
       const del = document.createElement('button');
@@ -1649,7 +2539,7 @@
     if(profiles.length===0){ openProfileForm(); }
   }
 
-  let selAvatar = null, selGroup = null;
+  let selAvatar = null, selCurs = null;
 
   function openProfileForm(){
     const form = document.getElementById('profileForm');
@@ -1658,7 +2548,7 @@
     document.getElementById('pfCancel').style.display = profiles.length ? 'block' : 'none';
     document.getElementById('pfName').value = '';
     selAvatar = AVATARS[rand(0, AVATARS.length-1)];
-    selGroup = null;
+    selCurs = null;
     const av = document.getElementById('pfAvatars');
     av.innerHTML = '';
     AVATARS.forEach(a=>{
@@ -1674,12 +2564,12 @@
     });
     const gr = document.getElementById('pfGroups');
     gr.innerHTML = '';
-    [['petits','4-5 anys (Infantil)'],['grans','6-7 anys (1r Primària)']].forEach(([g,label])=>{
+    CURSOS_ORDRE.forEach(id=>{
       const b = document.createElement('button');
       b.className = 'pf-chip';
-      b.textContent = label;
+      b.textContent = CURSOS[id].nom;
       b.onclick = ()=>{
-        selGroup = g;
+        selCurs = id;
         gr.querySelectorAll('.pf-chip').forEach(c=>c.classList.remove('selected'));
         b.classList.add('selected');
       };
@@ -1691,8 +2581,8 @@
   document.getElementById('pfCreate').addEventListener('click', ()=>{
     const name = document.getElementById('pfName').value.trim();
     if(!name){ alert('Escriu el teu nom! 😊'); return; }
-    if(!selGroup){ alert("Tria quants anys tens! 😊"); return; }
-    const p = { name, avatar:selAvatar, group:selGroup, stars:0, level:1, bestLevel:1, history:[] };
+    if(!selCurs){ alert("Tria quin curs fas! 😊"); return; }
+    const p = { name, avatar:selAvatar, curs:selCurs, stars:0, level:1, bestLevel:1, history:[] };
     profiles.push(p);
     saveProfiles();
     startGame(p);
