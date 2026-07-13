@@ -1,0 +1,20 @@
+{
+  "name": "mon-magic-dels-numeros",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Joc educatiu de matemàtiques en català per a final de 1r de Primària (6-7 anys).",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "typescript": "^5.5.4",
+    "vite": "^5.4.8",
+    "vitest": "^2.1.2"
+  }
+}

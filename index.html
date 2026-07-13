@@ -1,0 +1,1765 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>El Món Màgic dels Números - Final de 1r de Primària</title>
+<style>
+  :root{
+    --blau:#4fc3f7;
+    --verd:#81d4a2;
+    --groc:#ffd54f;
+    --taronja:#ff9e6d;
+    --rosa:#ff8fab;
+    --morat:#b39ddb;
+    --fons:#eef6ff;
+    --text:#3a3a5c;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    font-family:'Comic Sans MS','Baloo 2',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+    background:linear-gradient(160deg,#fff7e6 0%,#eaf6ff 50%,#eaffef 100%);
+    min-height:100vh;
+    display:flex;
+    justify-content:center;
+    align-items:flex-start;
+    padding:16px;
+    color:var(--text);
+  }
+  .app{
+    width:100%;
+    max-width:640px;
+    background:#ffffff;
+    border-radius:32px;
+    box-shadow:0 12px 0 rgba(0,0,0,0.06), 0 20px 40px rgba(0,0,0,0.08);
+    padding:20px 20px 28px;
+    position:relative;
+    overflow:hidden;
+  }
+  .topbar{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:8px;
+    flex-wrap:wrap;
+    gap:8px;
+  }
+  .title{
+    font-size:1.4rem;
+    font-weight:bold;
+    color:#5b4bc4;
+    display:flex;
+    align-items:center;
+    gap:8px;
+  }
+  .stats{
+    display:flex;
+    gap:14px;
+    align-items:center;
+    font-size:1.15rem;
+    font-weight:bold;
+  }
+  .stars{color:#e8a500;}
+  .level-badge{
+    background:var(--morat);
+    color:white;
+    padding:4px 14px;
+    border-radius:20px;
+    font-size:1rem;
+  }
+  .mascot-row{
+    display:flex;
+    justify-content:center;
+    margin:6px 0 4px;
+  }
+  .mascot{
+    font-size:3.2rem;
+    transition:transform 0.25s ease;
+    filter:drop-shadow(0 4px 4px rgba(0,0,0,0.1));
+  }
+  .mascot.bounce{ animation:bounce 0.6s ease; }
+  .mascot.sad{ animation:shake 0.5s ease; }
+  @keyframes bounce{
+    0%{transform:translateY(0) scale(1);}
+    30%{transform:translateY(-18px) scale(1.15);}
+    55%{transform:translateY(0) scale(0.95);}
+    75%{transform:translateY(-6px) scale(1.05);}
+    100%{transform:translateY(0) scale(1);}
+  }
+  @keyframes shake{
+    0%,100%{transform:translateX(0);}
+    25%{transform:translateX(-8px) rotate(-5deg);}
+    75%{transform:translateX(8px) rotate(5deg);}
+  }
+  .progressbar{
+    height:14px;
+    background:#f0f0f0;
+    border-radius:10px;
+    overflow:hidden;
+    margin:6px 0 18px;
+  }
+  .progressbar-fill{
+    height:100%;
+    background:linear-gradient(90deg,var(--groc),var(--taronja));
+    border-radius:10px;
+    transition:width 0.4s ease;
+  }
+  .game-card{
+    background:var(--fons);
+    border-radius:24px;
+    padding:22px 18px;
+    text-align:center;
+    min-height:270px;
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    align-items:center;
+    gap:16px;
+  }
+  .game-label{
+    font-size:0.95rem;
+    font-weight:bold;
+    color:#7a7a9a;
+    text-transform:uppercase;
+    letter-spacing:0.5px;
+  }
+  .question{
+    font-size:1.35rem;
+    font-weight:bold;
+    line-height:1.5;
+  }
+  .visual-row{
+    display:flex;
+    flex-wrap:wrap;
+    justify-content:center;
+    align-items:center;
+    gap:10px;
+    font-size:2.2rem;
+    min-height:56px;
+  }
+  .op-symbol{
+    font-size:2rem;
+    font-weight:bold;
+    color:#5b4bc4;
+    margin:0 4px;
+  }
+  .group{
+    display:flex;
+    flex-wrap:wrap;
+    gap:6px;
+    padding:10px 14px;
+    background:white;
+    border-radius:18px;
+    border:3px solid #dbe9ff;
+    max-width:220px;
+    justify-content:center;
+  }
+  .shape-display{
+    width:110px;
+    height:110px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+  }
+  .shape-circle{ width:90px;height:90px;border-radius:50%; }
+  .shape-square{ width:90px;height:90px;border-radius:10px; }
+  .shape-triangle{
+    width:0;height:0;
+    border-left:50px solid transparent;
+    border-right:50px solid transparent;
+    border-bottom:90px solid;
+  }
+  .shape-rectangle{ width:120px;height:70px;border-radius:10px; }
+  .shape-star{ font-size:90px; line-height:1; }
+  .digit-row{
+    display:flex;
+    gap:5px;
+    justify-content:center;
+  }
+  .digit-box{
+    color:white;
+    font-size:1.7rem;
+    font-weight:bold;
+    border-radius:10px;
+    padding:8px 12px;
+    min-width:20px;
+    text-align:center;
+  }
+  .options-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(90px,1fr));
+    gap:12px;
+    width:100%;
+    max-width:420px;
+  }
+  .option-btn{
+    font-family:inherit;
+    font-size:1.25rem;
+    font-weight:bold;
+    padding:16px 8px;
+    border-radius:18px;
+    border:none;
+    cursor:pointer;
+    background:white;
+    border:3px solid #d7e3ff;
+    color:var(--text);
+    box-shadow:0 4px 0 #d7e3ff;
+    transition:transform 0.1s ease, box-shadow 0.1s ease;
+  }
+  .option-btn:hover{
+    transform:translateY(-3px);
+  }
+  .option-btn:active{
+    transform:translateY(2px);
+    box-shadow:0 1px 0 #d7e3ff;
+  }
+  .option-btn.correct{
+    background:var(--verd);
+    border-color:#5cb586;
+    color:white;
+    box-shadow:0 4px 0 #5cb586;
+  }
+  .option-btn.wrong{
+    background:var(--rosa);
+    border-color:#e4638a;
+    color:white;
+    box-shadow:0 4px 0 #e4638a;
+  }
+  .option-btn:disabled{
+    cursor:default;
+  }
+  .feedback{
+    min-height:34px;
+    font-size:1.15rem;
+    font-weight:bold;
+  }
+  .feedback.good{ color:#3e9c6c; }
+  .feedback.bad{ color:#e05f83; }
+  .next-btn{
+    margin-top:6px;
+    font-family:inherit;
+    font-size:1.1rem;
+    font-weight:bold;
+    padding:12px 30px;
+    border-radius:20px;
+    border:none;
+    background:var(--blau);
+    color:white;
+    cursor:pointer;
+    box-shadow:0 4px 0 #2f9fd6;
+  }
+  .next-btn:active{ transform:translateY(2px); box-shadow:0 1px 0 #2f9fd6; }
+  .confetti{
+    position:fixed;
+    top:-20px;
+    font-size:1.6rem;
+    animation:fall linear forwards;
+    pointer-events:none;
+    z-index:99;
+  }
+  @keyframes fall{
+    to{ transform:translateY(105vh) rotate(360deg); opacity:0.3; }
+  }
+  .footer-note{
+    text-align:center;
+    font-size:0.8rem;
+    color:#a0a0bf;
+    margin-top:14px;
+  }
+  .icon-btn{
+    font-family:inherit;
+    font-size:1.1rem;
+    border:none;
+    background:white;
+    border:2px solid #d7e3ff;
+    border-radius:50%;
+    width:38px;
+    height:38px;
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    cursor:pointer;
+    box-shadow:0 3px 0 #d7e3ff;
+    flex-shrink:0;
+  }
+  .icon-btn:active{ transform:translateY(2px); box-shadow:0 1px 0 #d7e3ff; }
+  .question-row{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:10px;
+  }
+  .dashboard-panel{
+    display:none;
+    background:var(--fons);
+    border-radius:24px;
+    padding:20px 16px;
+    min-height:270px;
+  }
+  .dashboard-panel.open{ display:block; }
+  .dashboard-title{
+    font-size:1.15rem;
+    font-weight:bold;
+    color:#5b4bc4;
+    text-align:center;
+    margin-bottom:12px;
+  }
+  .stat-grid{
+    display:grid;
+    grid-template-columns:repeat(2,1fr);
+    gap:10px;
+    margin-bottom:16px;
+  }
+  .stat-card{
+    background:white;
+    border-radius:16px;
+    padding:10px 8px;
+    text-align:center;
+    border:2px solid #dbe9ff;
+  }
+  .stat-value{ font-size:1.4rem; font-weight:bold; color:#5b4bc4; }
+  .stat-label{ font-size:0.72rem; color:#7a7a9a; font-weight:bold; text-transform:uppercase; }
+  .type-bar-row{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    margin-bottom:8px;
+    font-size:0.85rem;
+  }
+  .type-bar-label{ width:120px; flex-shrink:0; font-weight:bold; text-align:right; }
+  .type-bar-track{
+    flex:1;
+    height:14px;
+    background:#e6ecf7;
+    border-radius:8px;
+    overflow:hidden;
+  }
+  .type-bar-fill{
+    height:100%;
+    background:linear-gradient(90deg,var(--verd),#5cb586);
+    border-radius:8px;
+  }
+  .type-bar-count{ width:44px; flex-shrink:0; font-size:0.78rem; color:#7a7a9a; }
+  .evolution-wrap{
+    background:white;
+    border-radius:16px;
+    padding:10px;
+    border:2px solid #dbe9ff;
+  }
+  .dashboard-close{
+    display:block;
+    margin:16px auto 0;
+    font-family:inherit;
+    font-size:1rem;
+    font-weight:bold;
+    padding:10px 24px;
+    border-radius:20px;
+    border:none;
+    background:var(--blau);
+    color:white;
+    cursor:pointer;
+    box-shadow:0 4px 0 #2f9fd6;
+  }
+  .dashboard-reset{
+    display:block;
+    margin:10px auto 0;
+    font-family:inherit;
+    font-size:0.85rem;
+    font-weight:bold;
+    padding:8px 20px;
+    border-radius:16px;
+    border:2px solid #f3c2d2;
+    background:white;
+    color:#e05f83;
+    cursor:pointer;
+  }
+  .dashboard-reset:active{ transform:translateY(1px); }
+  .profile-screen{
+    background:var(--fons);
+    border-radius:24px;
+    padding:24px 18px;
+    text-align:center;
+    min-height:270px;
+  }
+  .profile-title{ font-size:1.3rem; font-weight:bold; color:#5b4bc4; margin-bottom:18px; }
+  .profile-cards{ display:flex; flex-wrap:wrap; gap:16px; justify-content:center; }
+  .profile-card{
+    background:white;
+    border:3px solid #d7e3ff;
+    border-radius:20px;
+    padding:16px 22px;
+    cursor:pointer;
+    box-shadow:0 4px 0 #d7e3ff;
+    min-width:130px;
+    position:relative;
+    transition:transform 0.1s ease;
+  }
+  .profile-card:hover{ transform:translateY(-3px); }
+  .profile-card:active{ transform:translateY(2px); box-shadow:0 1px 0 #d7e3ff; }
+  .profile-avatar{ font-size:2.8rem; line-height:1.2; }
+  .profile-name{ font-weight:bold; font-size:1.15rem; margin-top:4px; }
+  .profile-age{ font-size:0.72rem; color:#7a7a9a; font-weight:bold; margin-top:2px; }
+  .profile-stars{ font-size:0.9rem; color:#e8a500; font-weight:bold; margin-top:6px; }
+  .profile-delete{
+    position:absolute; top:-9px; right:-9px;
+    background:var(--rosa); color:white;
+    border:2px solid white; border-radius:50%;
+    width:26px; height:26px; cursor:pointer;
+    font-weight:bold; font-size:0.8rem; line-height:1;
+  }
+  .profile-add{
+    border-style:dashed;
+    color:#7a7a9a;
+    display:flex; flex-direction:column;
+    align-items:center; justify-content:center;
+  }
+  .profile-form{
+    margin:18px auto 0;
+    background:white;
+    border-radius:20px;
+    border:3px solid #d7e3ff;
+    padding:16px 18px;
+    text-align:left;
+    max-width:380px;
+  }
+  .pf-label{ font-size:0.78rem; font-weight:bold; color:#7a7a9a; text-transform:uppercase; margin:12px 0 6px; }
+  .pf-label:first-child{ margin-top:0; }
+  .pf-input{
+    width:100%;
+    font-family:inherit;
+    font-size:1.15rem;
+    padding:10px 14px;
+    border-radius:14px;
+    border:2px solid #d7e3ff;
+    box-sizing:border-box;
+  }
+  .pf-row{ display:flex; flex-wrap:wrap; gap:8px; }
+  .pf-chip{
+    font-family:inherit;
+    font-size:0.95rem;
+    font-weight:bold;
+    padding:9px 13px;
+    border-radius:14px;
+    border:2px solid #d7e3ff;
+    background:white;
+    color:var(--text);
+    cursor:pointer;
+  }
+  .pf-chip.avatar{ font-size:1.5rem; padding:6px 10px; }
+  .pf-chip.selected{ background:var(--morat); border-color:#9a86d0; color:white; }
+  .pf-create{
+    margin-top:16px;
+    width:100%;
+    font-family:inherit;
+    font-size:1.1rem;
+    font-weight:bold;
+    padding:13px;
+    border-radius:16px;
+    border:none;
+    background:var(--verd);
+    color:white;
+    cursor:pointer;
+    box-shadow:0 4px 0 #5cb586;
+  }
+  .pf-create:active{ transform:translateY(2px); box-shadow:0 1px 0 #5cb586; }
+  .player-chip{
+    background:white;
+    border:2px solid #d7e3ff;
+    border-radius:20px;
+    padding:4px 12px;
+    font-size:0.95rem;
+    font-weight:bold;
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+  }
+  .coin{
+    width:52px; height:52px; border-radius:50%;
+    background:radial-gradient(circle at 35% 30%, #ffe9a8, #f3c94f);
+    border:3px solid #d9a934;
+    color:#7a5c00;
+    font-weight:bold; font-size:0.95rem;
+    display:inline-flex; align-items:center; justify-content:center;
+    flex-shrink:0;
+  }
+  .coin2{
+    background:radial-gradient(circle at 35% 30%, #fdf6e0, #e6e0cc);
+    border-color:#b9b19a;
+    color:#6b6248;
+  }
+  .bill{
+    width:80px; height:46px; border-radius:8px;
+    background:linear-gradient(120deg, #dfeee2, #bcd9c4);
+    border:3px solid #8fbf9f;
+    color:#3e7d5a;
+    font-weight:bold;
+    display:inline-flex; align-items:center; justify-content:center;
+    flex-shrink:0;
+  }
+  .pf-cancel{
+    margin-top:8px;
+    width:100%;
+    font-family:inherit;
+    font-size:0.95rem;
+    font-weight:bold;
+    padding:10px;
+    border-radius:16px;
+    border:2px solid #d7e3ff;
+    background:white;
+    color:#7a7a9a;
+    cursor:pointer;
+  }
+  .parent-link{
+    background:none;
+    border:none;
+    font-family:inherit;
+    font-size:0.8rem;
+    color:#a0a0bf;
+    cursor:pointer;
+    margin-top:18px;
+    text-decoration:underline;
+  }
+  .parent-panel{
+    display:none;
+    background:var(--fons);
+    border-radius:24px;
+    padding:20px 16px;
+  }
+  .parent-panel.open{ display:block; }
+  .parent-card{
+    background:white;
+    border:2px solid #dbe9ff;
+    border-radius:16px;
+    padding:14px;
+    margin-bottom:14px;
+  }
+  .parent-head{ display:flex; align-items:center; gap:10px; margin-bottom:10px; }
+  .parent-avatar{ font-size:2.2rem; }
+  .parent-name{ font-weight:bold; font-size:1.05rem; }
+  .parent-sub{ font-size:0.78rem; color:#7a7a9a; font-weight:bold; }
+  .parent-types{ margin:10px 0; }
+  .parent-tip{
+    margin-top:10px;
+    font-size:0.85rem;
+    background:#fff7e0;
+    border:2px solid #f0dfae;
+    border-radius:12px;
+    padding:8px 12px;
+  }
+  @media (max-width:420px){
+    .title{font-size:1.1rem;}
+    .question{font-size:1.1rem;}
+    .visual-row{font-size:1.8rem;}
+    .type-bar-label{ width:80px; font-size:0.75rem; }
+  }
+</style>
+</head>
+<body>
+<div class="app" id="app">
+  <div class="topbar">
+    <div class="title">🦊 Món Màgic dels Números</div>
+    <div class="stats" id="statsBar" style="display:none;">
+      <span class="player-chip" id="playerChip"></span>
+      <span class="stars">⭐ <span id="starCount">0</span></span>
+      <span class="level-badge">Nivell <span id="levelNum">1</span></span>
+      <button class="icon-btn" id="dashboardBtn" title="Estadístiques">📊</button>
+      <button class="icon-btn" id="switchBtn" title="Desar i canviar de jugadora">👧</button>
+    </div>
+  </div>
+
+  <div class="profile-screen" id="profileScreen">
+    <div class="profile-title">Qui juga avui? 👋</div>
+    <div class="profile-cards" id="profileCards"></div>
+    <div class="profile-form" id="profileForm" style="display:none;">
+      <div class="pf-label">Com et dius?</div>
+      <input class="pf-input" id="pfName" maxlength="15" placeholder="El teu nom">
+      <div class="pf-label">Tria la teva mascota</div>
+      <div class="pf-row" id="pfAvatars"></div>
+      <div class="pf-label">Quants anys tens?</div>
+      <div class="pf-row" id="pfGroups"></div>
+      <button class="pf-create" id="pfCreate">Crear i jugar! 🎮</button>
+      <button class="pf-cancel" id="pfCancel">↩️ Torna enrere</button>
+    </div>
+    <button class="parent-link" id="parentBtn">👨‍👩‍👧 Zona de pares</button>
+  </div>
+
+  <div class="parent-panel" id="parentPanel">
+    <div class="dashboard-title">👨‍👩‍👧 Zona de pares</div>
+    <div id="parentCards"></div>
+    <button class="dashboard-close" id="parentClose">Tornar 👈</button>
+  </div>
+
+  <div class="mascot-row" id="mascotRow" style="display:none;"><div class="mascot" id="mascot">🦊</div></div>
+
+  <div class="progressbar" id="progressBar" style="display:none;"><div class="progressbar-fill" id="progressFill" style="width:0%"></div></div>
+
+  <div class="dashboard-panel" id="dashboardPanel">
+    <div class="dashboard-title">📊 El teu progrés</div>
+    <div class="stat-grid">
+      <div class="stat-card"><div class="stat-value" id="statTotal">0</div><div class="stat-label">Preguntes</div></div>
+      <div class="stat-card"><div class="stat-value" id="statAccuracy">0%</div><div class="stat-label">Encerts</div></div>
+      <div class="stat-card"><div class="stat-value" id="statAvgTime">0s</div><div class="stat-label">Temps mitjà</div></div>
+      <div class="stat-card"><div class="stat-value" id="statBestLevel">1</div><div class="stat-label">Nivell més alt</div></div>
+    </div>
+    <div id="typeBars"></div>
+    <div class="evolution-wrap">
+      <div class="stat-label" style="text-align:center;margin-bottom:6px;">Evolució del nivell per pregunta</div>
+      <canvas id="evolutionChart" width="560" height="110" style="width:100%;height:110px;"></canvas>
+    </div>
+    <button class="dashboard-close" id="dashboardClose">Tornar a jugar 👉</button>
+    <button class="dashboard-reset" id="dashboardReset">🔄 Reiniciar el progrés</button>
+  </div>
+
+  <div class="game-card" id="gameCard" style="display:none;">
+    <div class="game-label" id="gameLabel">Sumes</div>
+    <div class="question-row">
+      <div class="question" id="question"></div>
+      <button class="icon-btn" id="speakBtn" title="Llegir en veu alta">🔊</button>
+    </div>
+    <div id="visualArea"></div>
+    <div class="options-grid" id="optionsGrid"></div>
+    <div class="feedback" id="feedback"></div>
+    <button class="next-btn" id="nextBtn" style="display:none;">Següent 👉</button>
+  </div>
+
+  <div class="footer-note">Fet amb 💛 · un joc adaptat per a cada germana</div>
+</div>
+
+<script>
+(function(){
+  const state = {
+    level: 1,          // 1 to 3
+    stars: 0,
+    streakCorrect: 0,
+    streakWrong: 0,
+    fastStreak: 0,     // consecutive fast+correct answers
+    slowStreak: 0,     // consecutive slow (even if correct) or wrong answers
+    bestLevel: 1,
+    roundStartTime: null,
+    history: [],       // {level, correct, elapsedMs, type}
+    current: null
+  };
+
+  // ---------- PERFILS ----------
+  let profiles = [];
+  let activeProfile = null;
+  const AVATARS = ['🦊','🐰','🐱','🦄','🐼','🐥','🐬','🦋'];
+  const GROUP_LABELS = { petits:'4-5 anys · Infantil', grans:'6-7 anys · 1r Primària' };
+
+  // Llindars de velocitat adaptats a l'edat (les petites necessiten més temps)
+  function fastMs(){ return activeProfile && activeProfile.group==='petits' ? 7000 : 4000; }
+  function slowMs(){ return activeProfile && activeProfile.group==='petits' ? 22000 : 16000; }
+
+  const COLORS = ['#ff8fab','#4fc3f7','#ffd54f','#81d4a2','#b39ddb','#ff9e6d'];
+  const OBJECT_EMOJIS = ['🍎','⭐','🎈','🐟','🍓','🚗','🐝','🍪','🐸','🌸'];
+  const SHAPE_NAMES = {circle:'Cercle', square:'Quadrat', triangle:'Triangle', rectangle:'Rectangle', star:'Estrella'};
+  const TYPE_LABELS = {suma:'Sumes', resta:'Restes', incognita:'Troba el número', dobles:'Dobles i meitats', compara:'Comparar', sequencia:'Seqüències', geometria:'Formes', rellotge:'Rellotge', comptar:'Comptar', colors:'Colors', mida:'Gran i petit', ordenar:'Ordenar nombres', problema:'Problemes', monedes:'Monedes', reconeixer:'Busca el número'};
+
+  function rand(min,max){ return Math.floor(Math.random()*(max-min+1))+min; }
+  function pick(arr){ return arr[rand(0,arr.length-1)]; }
+  function shuffle(arr){
+    const a = arr.slice();
+    for(let i=a.length-1;i>0;i--){
+      const j = rand(0,i);
+      [a[i],a[j]] = [a[j],a[i]];
+    }
+    return a;
+  }
+
+  function uniqueOptions(correct, min, max, count){
+    const set = new Set([correct]);
+    let guard = 0;
+    while(set.size < count && guard < 200){
+      set.add(rand(min,max));
+      guard++;
+    }
+    return shuffle(Array.from(set));
+  }
+
+  // ---------- TEXT-TO-SPEECH (català) ----------
+  let catalanVoice = null;
+  let lastUtter = null; // referència viva per evitar que Chrome talli la veu (bug conegut)
+
+  function ttsAvailable(){
+    try{
+      return typeof window.speechSynthesis !== 'undefined'
+        && typeof window.SpeechSynthesisUtterance !== 'undefined';
+    }catch(e){ return false; }
+  }
+
+  function pickCatalanVoice(){
+    if(!ttsAvailable()) return;
+    try{
+      const voices = window.speechSynthesis.getVoices();
+      catalanVoice = voices.find(v=>v.lang && v.lang.toLowerCase().startsWith('ca')) ||
+                     voices.find(v=>v.lang && v.lang.toLowerCase().startsWith('es')) ||
+                     null;
+    }catch(e){ catalanVoice = null; }
+  }
+  if(ttsAvailable()){
+    pickCatalanVoice();
+    try{ window.speechSynthesis.onvoiceschanged = pickCatalanVoice; }catch(e){}
+    // Workaround d'un bug de Chrome: la síntesi es queda "pausada" al cap d'uns segons.
+    setInterval(()=>{
+      try{
+        if(window.speechSynthesis.speaking && window.speechSynthesis.paused){
+          window.speechSynthesis.resume();
+        }
+      }catch(e){}
+    }, 3000);
+  }
+
+  function speak(text){
+    if(!ttsAvailable() || !text) return;
+    try{
+      window.speechSynthesis.cancel();
+      if(!catalanVoice) pickCatalanVoice(); // per si les veus han carregat tard
+      const utter = new SpeechSynthesisUtterance(text);
+      utter.lang = 'ca-ES';
+      if(catalanVoice) utter.voice = catalanVoice;
+      utter.rate = 0.9;
+      utter.pitch = 1.05;
+      lastUtter = utter;
+      // Petita pausa després de cancel(): sense això Chrome de vegades no diu res.
+      setTimeout(()=>{
+        try{
+          window.speechSynthesis.speak(utter);
+          window.speechSynthesis.resume();
+        }catch(e){}
+      }, 80);
+    }catch(e){ /* entorn sense permís d'àudio: seguim sense veu */ }
+  }
+
+  function emojiName(e){
+    const names = {'🍎':'pomes','⭐':'estrelles','🎈':'globus','🐟':'peixos','🍓':'maduixes','🚗':'cotxes','🐝':'abelles','🍪':'galetes','🐸':'granotes','🌸':'flors'};
+    return names[e] || 'coses';
+  }
+
+  // Renders a number as coloured place-value digit boxes (blau = desenes/centenes, taronja = unitats)
+  function placeValueHTML(n){
+    const str = String(n);
+    const boxes = str.split('').map((d,i)=>{
+      const isUnits = i === str.length-1;
+      const color = isUnits ? 'var(--taronja)' : 'var(--blau)';
+      return `<div class="digit-box" style="background:${color};">${d}</div>`;
+    }).join('');
+    return `<div class="digit-row">${boxes}</div>`;
+  }
+
+  // ---------- GAME GENERATORS ----------
+
+  function genAddition(){
+    let a,b,visual;
+    if(state.level===1){
+      // fets bàsics fins a 10, comptatge amb dibuixos
+      do{ a = rand(1,8); b = rand(1,8); } while(a+b>10);
+      const emoji = pick(OBJECT_EMOJIS);
+      visual = `<div class="visual-row">
+          <div class="group">${emoji.repeat(a)}</div>
+          <span class="op-symbol">+</span>
+          <div class="group">${emoji.repeat(b)}</div>
+        </div>`;
+    } else if(state.level===2){
+      // fins a 15, encara amb comptatge de dibuixos
+      do{ a = rand(1,10); b = rand(1,10); } while(a+b>15);
+      const emoji = pick(OBJECT_EMOJIS);
+      visual = `<div class="visual-row">
+          <div class="group">${emoji.repeat(a)}</div>
+          <span class="op-symbol">+</span>
+          <div class="group">${emoji.repeat(b)}</div>
+        </div>`;
+    } else {
+      // fins a 20, treballant la descomposició en desena i unitats
+      do{ a = rand(1,12); b = rand(1,12); } while(a+b>20);
+      visual = `<div class="visual-row">${placeValueHTML(a)}<span class="op-symbol">+</span>${placeValueHTML(b)}</div>`;
+    }
+    const answer = a+b;
+    const spread = state.level===1 ? 3 : 5;
+    const options = uniqueOptions(answer, Math.max(0,answer-spread), answer+spread, 4);
+    return {
+      type:'suma',
+      label:'Sumes ➕',
+      question:`Quant és ${a} + ${b}?`,
+      visualHTML: visual,
+      options,
+      answer
+    };
+  }
+
+  function genSubtraction(){
+    let a,b,visual;
+    if(state.level===1){
+      a = rand(3,10); b = rand(0,a);
+    } else if(state.level===2){
+      a = rand(5,15); b = rand(0,a);
+    } else {
+      a = rand(10,20); b = rand(0,a);
+    }
+    const emoji = pick(OBJECT_EMOJIS);
+    const objs = Array.from({length:a}, (_,i)=> i<b ? `<span style="opacity:0.25;text-decoration:line-through;">${emoji}</span>` : emoji).join('');
+    visual = `<div class="visual-row"><div class="group">${objs}</div></div>`;
+    const answer = a-b;
+    const options = uniqueOptions(answer, 0, answer+5, 4);
+    return {
+      type:'resta',
+      label:'Restes ➖',
+      question:`Hi havia ${a} ${emojiName(emoji)}. En traiem ${b}. Quants en queden?`,
+      visualHTML: visual,
+      options,
+      answer
+    };
+  }
+
+  function genMissingNumber(){
+    const maxN = state.level===1 ? 10 : (state.level===2 ? 15 : 20);
+    let a = rand(1,maxN-1);
+    let b = rand(1, Math.max(1,maxN-a));
+    let c = a+b;
+    const blankSlot = pick(['a','b']);
+    let question, answer;
+    if(blankSlot==='a'){
+      question = `? + ${b} = ${c}`;
+      answer = a;
+    } else {
+      question = `${a} + ? = ${c}`;
+      answer = b;
+    }
+    const options = uniqueOptions(answer, Math.max(0,answer-5), answer+5, 4);
+    return {
+      type:'incognita',
+      label:'Troba el número 🔍',
+      question:`Quin número falta?`,
+      visualHTML:`<div class="visual-row"><span style="background:white;border:3px solid #dbe9ff;border-radius:14px;padding:10px 18px;font-size:1.8rem;">${question}</span></div>`,
+      options,
+      answer
+    };
+  }
+
+  function genDoubleHalf(){
+    const maxN = state.level===1 ? 5 : (state.level===2 ? 8 : 10);
+    const isDouble = Math.random()<0.5;
+    if(isDouble){
+      const n = rand(1,maxN);
+      const answer = n*2;
+      const options = uniqueOptions(answer, Math.max(0,answer-6), answer+6, 4);
+      return {
+        type:'dobles',
+        label:'Dobles i meitats 🔁',
+        question:`Quin és el doble de ${n}?`,
+        visualHTML:`<div class="visual-row"><span style="background:white;border:3px solid #dbe9ff;border-radius:14px;padding:10px 18px;">${n} + ${n}</span></div>`,
+        options,
+        answer
+      };
+    }
+    const half = rand(1,maxN);
+    const n = half*2;
+    const answer = half;
+    const options = uniqueOptions(answer, Math.max(0,answer-5), answer+5, 4);
+    return {
+      type:'dobles',
+      label:'Dobles i meitats 🔁',
+      question:`Quina és la meitat de ${n}?`,
+      visualHTML:`<div class="visual-row"><span style="background:white;border:3px solid #dbe9ff;border-radius:14px;padding:10px 18px;">${n} ÷ 2</span></div>`,
+      options,
+      answer
+    };
+  }
+
+  function genCompare(){
+    let maxN = state.level===1?20: state.level===2?60:99;
+    let a = rand(1,maxN);
+    let b = rand(1,maxN);
+    while(b===a){ b = rand(1,maxN); }
+    const askMore = Math.random() < 0.5;
+    const answer = askMore ? (a>b? 'A':'B') : (a<b? 'A':'B');
+    return {
+      type:'compara',
+      label:'Compara nombres 🔍',
+      question: askMore ? `Quin número és MÉS GRAN?` : `Quin número és MÉS PETIT?`,
+      visualHTML:`<div class="visual-row">
+          <div style="text-align:center;">${placeValueHTML(a)}<div style="margin-top:6px;font-weight:bold;">A</div></div>
+          <span class="op-symbol">vs</span>
+          <div style="text-align:center;">${placeValueHTML(b)}<div style="margin-top:6px;font-weight:bold;">B</div></div>
+        </div>`,
+      options:['A','B'],
+      answer
+    };
+  }
+
+  function genSequence(){
+    // numeric sequences: level determines step size and range
+    const useNumeric = state.level>=2 || Math.random()<0.5;
+    if(useNumeric){
+      let step;
+      if(state.level===1){ step = 1; }
+      else if(state.level===2){ step = pick([1,1,2]); }
+      else { step = pick([1,2,-1]); }
+      const startMax = state.level===1?10: state.level===2?20:25;
+      const start = rand(1, step<0 ? startMax+5 : startMax);
+      const seq = [];
+      let val = start;
+      for(let i=0;i<4;i++){ seq.push(val); val+=step; }
+      const answer = val;
+      const options = uniqueOptions(answer, Math.max(0,answer-Math.abs(step)*2-2), answer+Math.abs(step)*2+2, 4);
+      return {
+        type:'sequencia',
+        label:'Seqüències lògiques 🔢',
+        question:'Quin número segueix?',
+        visualHTML:`<div class="visual-row">${seq.map(n=>`<span style="background:white;border:3px solid #dbe9ff;border-radius:14px;padding:8px 14px;">${n}</span>`).join('<span class="op-symbol">→</span>')}<span class="op-symbol">→</span><span style="background:#fff3cd;border:3px dashed #e8c25a;border-radius:14px;padding:8px 14px;">?</span></div>`,
+        options,
+        answer
+      };
+    }
+    const patternLen = state.level===1 ? 2 : 3;
+    const pool = shuffle(OBJECT_EMOJIS).slice(0,patternLen);
+    const repeats = 3;
+    let seq = [];
+    for(let i=0;i<repeats;i++){ seq = seq.concat(pool); }
+    seq = seq.slice(0, patternLen*repeats);
+    const answer = pool[0];
+    const others = shuffle(OBJECT_EMOJIS.filter(e=>!pool.includes(e))).slice(0,3);
+    const options = shuffle([answer, ...others]);
+    return {
+      type:'sequencia',
+      label:'Seqüències lògiques 🔢',
+      question:'Quin dibuix segueix al patró?',
+      visualHTML:`<div class="visual-row">${seq.join(' ')} <span class="op-symbol">→</span> <span style="background:#fff3cd;border:3px dashed #e8c25a;border-radius:14px;padding:6px 12px;">?</span></div>`,
+      options,
+      answer
+    };
+  }
+
+  function genGeometry(){
+    const askSides = state.level>=2 && Math.random()<0.4;
+    const basicShapes = ['circle','square','triangle'];
+    const advShapes = ['circle','square','triangle','rectangle','star'];
+    const shapes = state.level===1 ? basicShapes : advShapes;
+    const shape = pick(shapes.filter(s=>s!=='circle' && s!=='star' || !askSides));
+    const color = pick(COLORS);
+    let shapeHTML = '';
+    if(shape==='star'){
+      shapeHTML = `<div class="shape-display"><div class="shape-star" style="color:${color};">⭐</div></div>`;
+    } else {
+      shapeHTML = `<div class="shape-display"><div class="shape-${shape}" style="${shape==='triangle'?`border-bottom-color:${color};`:`background:${color};`}"></div></div>`;
+    }
+    if(askSides){
+      const SIDES = {square:4, triangle:3, rectangle:4};
+      const answer = SIDES[shape];
+      const options = uniqueOptions(answer, 3, 6, 4);
+      return {
+        type:'geometria',
+        label:'Geometria 🔺',
+        question:'Quants costats té aquesta figura?',
+        visualHTML: shapeHTML,
+        options,
+        answer
+      };
+    }
+    const numOptions = state.level===1 ? 3 : 4;
+    const optionNames = shuffle(shapes.slice()).slice(0,numOptions);
+    if(!optionNames.includes(shape)){ optionNames[0] = shape; }
+    const options = shuffle(optionNames.map(s=>SHAPE_NAMES[s]));
+    return {
+      type:'geometria',
+      label:'Geometria 🔺',
+      question:'Com es diu aquesta figura?',
+      visualHTML: shapeHTML,
+      options,
+      answer: SHAPE_NAMES[shape]
+    };
+  }
+
+  function clockNumbersSVG(){
+    let s='';
+    for(let i=1;i<=12;i++){
+      const angle = (i*30-90) * Math.PI/180;
+      const x = 50 + 38*Math.cos(angle);
+      const y = 50 + 38*Math.sin(angle);
+      s += `<text x="${x.toFixed(1)}" y="${y.toFixed(1)}" font-size="9" text-anchor="middle" dominant-baseline="middle" fill="#3a3a5c" font-weight="bold">${i}</text>`;
+    }
+    return s;
+  }
+
+  function buildClockSVG(hourAngle, minuteAngle){
+    return `<svg viewBox="0 0 100 100" width="160" height="160">
+      <circle cx="50" cy="50" r="46" fill="white" stroke="#4fc3f7" stroke-width="4"/>
+      ${clockNumbersSVG()}
+      <line x1="50" y1="50" x2="50" y2="28" stroke="#5b4bc4" stroke-width="4" stroke-linecap="round" transform="rotate(${hourAngle} 50 50)"/>
+      <line x1="50" y1="50" x2="50" y2="18" stroke="#ff8fab" stroke-width="3" stroke-linecap="round" transform="rotate(${minuteAngle} 50 50)"/>
+      <circle cx="50" cy="50" r="3" fill="#5b4bc4"/>
+    </svg>`;
+  }
+
+  function genClock(){
+    const hour = rand(1,12);
+    const hourAngle = (hour%12)*30;
+    const minuteAngle = 0;
+    const svg = buildClockSVG(hourAngle, minuteAngle);
+    const answer = `Les ${hour} en punt`;
+    const wrongHours = shuffle([1,2,3,4,5,6,7,8,9,10,11,12].filter(h=>h!==hour)).slice(0,3);
+    let options = wrongHours.map(h => `Les ${h} en punt`);
+    options.push(answer);
+    options = shuffle(Array.from(new Set(options)));
+    while(options.length<4){
+      const h = rand(1,12);
+      const opt = `Les ${h} en punt`;
+      if(!options.includes(opt)) options.push(opt);
+    }
+    return {
+      type:'rellotge',
+      label:"Quina hora és? 🕐",
+      question:'Mira el rellotge. Quina hora marca?',
+      visualHTML:`<div class="shape-display" style="width:auto;height:auto;">${svg}</div>`,
+      options: options.slice(0,4),
+      answer
+    };
+  }
+
+  // ---------- JOCS PER A LES PETITES (4-5 anys, Infantil) ----------
+
+  function genCountP(){
+    const maxN = state.level===1 ? 4 : (state.level===2 ? 7 : 10);
+    const n = rand(1, maxN);
+    const emoji = pick(OBJECT_EMOJIS);
+    const options = uniqueOptions(n, 1, Math.max(5, n+2), 3);
+    return {
+      type:'comptar',
+      label:'Comptem! 🔢',
+      question:`Compta bé! Quants n'hi ha?`,
+      visualHTML:`<div class="visual-row"><div class="group">${emoji.repeat(n)}</div></div>`,
+      options,
+      answer:n
+    };
+  }
+
+  function genAddP(){
+    const maxSum = state.level===1 ? 5 : (state.level===2 ? 8 : 10);
+    let a,b;
+    do{ a = rand(1, maxSum-1); b = rand(1, maxSum-1); } while(a+b > maxSum);
+    const emoji = pick(OBJECT_EMOJIS);
+    const answer = a+b;
+    const options = uniqueOptions(answer, Math.max(1,answer-2), answer+2, 3);
+    return {
+      type:'suma',
+      label:'Sumes ➕',
+      question:`Quant és ${a} + ${b}? Compta els dibuixos!`,
+      visualHTML:`<div class="visual-row">
+          <div class="group">${emoji.repeat(a)}</div>
+          <span class="op-symbol">+</span>
+          <div class="group">${emoji.repeat(b)}</div>
+        </div>`,
+      options,
+      answer
+    };
+  }
+
+  function genSubP(){
+    const maxA = state.level===1 ? 5 : (state.level===2 ? 8 : 10);
+    const a = rand(2, maxA);
+    const b = rand(1, a);
+    const emoji = pick(OBJECT_EMOJIS);
+    const objs = Array.from({length:a}, (_,i)=> i<b ? `<span style="opacity:0.25;text-decoration:line-through;">${emoji}</span>` : emoji).join('');
+    const answer = a-b;
+    const options = uniqueOptions(answer, 0, answer+3, 3);
+    return {
+      type:'resta',
+      label:'Restes ➖',
+      question:`Hi havia ${a} ${emojiName(emoji)}. En marxen ${b}. Quants en queden?`,
+      visualHTML:`<div class="visual-row"><div class="group">${objs}</div></div>`,
+      options,
+      answer
+    };
+  }
+
+  function genCompareGroupsP(){
+    const maxN = state.level===1 ? 4 : (state.level===2 ? 6 : 9);
+    let a = rand(1,maxN), b = rand(1,maxN);
+    while(b===a){ b = rand(1,maxN); }
+    const emoji = pick(OBJECT_EMOJIS);
+    const askMore = Math.random() < 0.5;
+    const answer = askMore ? (a>b?'A':'B') : (a<b?'A':'B');
+    return {
+      type:'compara',
+      label:'On n\'hi ha més? 👀',
+      question: askMore ? `On hi ha MÉS ${emojiName(emoji)}?` : `On hi ha MENYS ${emojiName(emoji)}?`,
+      visualHTML:`<div class="visual-row">
+          <div style="text-align:center;"><div class="group">${emoji.repeat(a)}</div><div style="margin-top:6px;font-weight:bold;font-size:1.2rem;">A</div></div>
+          <div style="text-align:center;"><div class="group">${emoji.repeat(b)}</div><div style="margin-top:6px;font-weight:bold;font-size:1.2rem;">B</div></div>
+        </div>`,
+      options:['A','B'],
+      answer
+    };
+  }
+
+  function genShapeP(){
+    const basicShapes = ['circle','square','triangle'];
+    const shape = pick(basicShapes);
+    const color = pick(COLORS);
+    const shapeHTML = `<div class="shape-display"><div class="shape-${shape}" style="${shape==='triangle'?`border-bottom-color:${color};`:`background:${color};`}"></div></div>`;
+    const options = shuffle(basicShapes.map(s=>SHAPE_NAMES[s]));
+    return {
+      type:'geometria',
+      label:'Formes 🔺',
+      question:'Com es diu aquesta forma?',
+      visualHTML: shapeHTML,
+      options,
+      answer: SHAPE_NAMES[shape]
+    };
+  }
+
+  const COLOR_ITEMS = [
+    ['#e05f5f','Vermell'], ['#4fc3f7','Blau'], ['#ffd54f','Groc'],
+    ['#81d4a2','Verd'], ['#ff8fab','Rosa'], ['#b39ddb','Morat'], ['#ff9e6d','Taronja']
+  ];
+  function genColorP(){
+    const items = shuffle(COLOR_ITEMS).slice(0,3);
+    const [hex, name] = items[0];
+    const shape = pick(['circle','square']);
+    const shapeHTML = `<div class="shape-display"><div class="shape-${shape}" style="background:${hex};"></div></div>`;
+    return {
+      type:'colors',
+      label:'Colors 🎨',
+      question:'De quin color és?',
+      visualHTML: shapeHTML,
+      options: shuffle(items.map(it=>it[1])),
+      answer: name
+    };
+  }
+
+  function genPatternP(){
+    const patternLen = state.level<=2 ? 2 : 3;
+    const pool = shuffle(OBJECT_EMOJIS).slice(0, patternLen);
+    let seq = [];
+    for(let i=0;i<3;i++){ seq = seq.concat(pool); }
+    const shown = seq.slice(0, patternLen*2 + 1);
+    const answer = seq[shown.length];
+    const distractor = pick(OBJECT_EMOJIS.filter(e=>!pool.includes(e)));
+    const options = shuffle(Array.from(new Set([...pool, distractor])).slice(0,3));
+    if(!options.includes(answer)) options[0] = answer;
+    return {
+      type:'sequencia',
+      label:'Segueix el patró 🔁',
+      question:'Quin dibuix ve ara?',
+      visualHTML:`<div class="visual-row">${shown.join(' ')} <span class="op-symbol">→</span> <span style="background:#fff3cd;border:3px dashed #e8c25a;border-radius:14px;padding:6px 12px;">?</span></div>`,
+      options: shuffle(options),
+      answer
+    };
+  }
+
+  function genBigSmallP(){
+    const emoji = pick(OBJECT_EMOJIS);
+    const askBig = Math.random() < 0.5;
+    const bigIsA = Math.random() < 0.5;
+    const sizeA = bigIsA ? '3.4rem' : '1.6rem';
+    const sizeB = bigIsA ? '1.6rem' : '3.4rem';
+    const answer = askBig ? (bigIsA?'A':'B') : (bigIsA?'B':'A');
+    return {
+      type:'mida',
+      label:'Gran i petit 🔍',
+      question: askBig ? 'Quin és més GRAN?' : 'Quin és més PETIT?',
+      visualHTML:`<div class="visual-row" style="align-items:flex-end;">
+          <div style="text-align:center;"><span style="font-size:${sizeA};">${emoji}</span><div style="font-weight:bold;font-size:1.2rem;">A</div></div>
+          <div style="width:30px;"></div>
+          <div style="text-align:center;"><span style="font-size:${sizeB};">${emoji}</span><div style="font-weight:bold;font-size:1.2rem;">B</div></div>
+        </div>`,
+      options:['A','B'],
+      answer
+    };
+  }
+
+  // ---------- REPTES NOUS (compartits o per grup) ----------
+
+  function genOrder(){
+    const maxN = state.level===1 ? 20 : (state.level===2 ? 60 : 99);
+    const nums = new Set();
+    while(nums.size<3){ nums.add(rand(1,maxN)); }
+    const ordenats = Array.from(nums).sort((x,y)=>x-y);
+    const desordenats = shuffle(ordenats);
+    const fmt = a => a.join(' → ');
+    const answer = fmt(ordenats);
+    const [p,q,r] = ordenats;
+    const perms = [[p,q,r],[p,r,q],[q,p,r],[q,r,p],[r,p,q],[r,q,p]].map(fmt);
+    const dolentes = shuffle(perms.filter(s=>s!==answer)).slice(0,3);
+    const options = shuffle([answer, ...dolentes]);
+    return {
+      type:'ordenar',
+      label:'Ordenar nombres 📶',
+      question:'Ordena aquests nombres de més petit a més gran!',
+      visualHTML:`<div class="visual-row">${desordenats.map(n=>`<span style="background:white;border:3px solid #dbe9ff;border-radius:14px;padding:8px 14px;">${n}</span>`).join(' ')}</div>`,
+      options,
+      answer
+    };
+  }
+
+  const NOMS_PROBLEMA = ['En Pau','La Júlia','En Biel','La Martina','L\'Aina','En Nil'];
+  // emojiName retorna noms en plural; per fer la pregunta ben escrita cal saber el gènere
+  const FEMENINS_PLURAL = ['pomes','estrelles','maduixes','abelles','galetes','granotes','flors'];
+
+  function makeWordProblem(maxSum, nOpcions){
+    const qui = pick(NOMS_PROBLEMA);
+    const emoji = pick(OBJECT_EMOJIS);
+    const nom = emojiName(emoji);
+    const quants = FEMENINS_PLURAL.includes(nom) ? 'Quantes' : 'Quants';
+    const esSuma = Math.random()<0.5;
+    let question, answer, visual;
+    if(esSuma){
+      let a,b;
+      do{ a = rand(1,maxSum-1); b = rand(1,maxSum-1); } while(a+b>maxSum);
+      answer = a+b;
+      const accio = pick(['en compra','en troba','li\'n regalen']);
+      question = `${qui} té ${a} ${nom} i ${accio} ${b} més. ${quants} en té ara?`;
+      visual = `<div class="visual-row">
+          <div class="group">${emoji.repeat(a)}</div>
+          <span class="op-symbol">+</span>
+          <div class="group">${emoji.repeat(b)}</div>
+        </div>`;
+    } else {
+      const a = rand(2,maxSum);
+      const b = rand(1,a);
+      answer = a-b;
+      const accio = pick(['en dona','en perd','en regala']);
+      question = `${qui} té ${a} ${nom} i ${accio} ${b}. ${quants} en queden?`;
+      const objs = Array.from({length:a}, (_,i)=> i<b ? `<span style="opacity:0.25;text-decoration:line-through;">${emoji}</span>` : emoji).join('');
+      visual = `<div class="visual-row"><div class="group">${objs}</div></div>`;
+    }
+    const options = uniqueOptions(answer, Math.max(0,answer-3), answer+3, nOpcions);
+    return {
+      type:'problema',
+      label:'Problemes 📖',
+      question,
+      visualHTML: visual,
+      options,
+      answer
+    };
+  }
+
+  function genWordProblem(){
+    const maxSum = state.level===1 ? 10 : (state.level===2 ? 15 : 20);
+    return makeWordProblem(maxSum, 4);
+  }
+
+  function genWordProblemP(){
+    const maxSum = state.level===1 ? 5 : (state.level===2 ? 8 : 10);
+    return makeWordProblem(maxSum, 3);
+  }
+
+  function genMoney(){
+    // Sempre euros sencers (les fraccions i els cèntims són de cursos posteriors).
+    const coins = [];
+    let bitllet = 0;
+    if(state.level===1){
+      const n = rand(2,6);
+      for(let i=0;i<n;i++) coins.push(1);
+    } else {
+      let total;
+      if(state.level===2){ total = rand(4,12); }
+      else { bitllet = 5; total = rand(8,20) - 5; }
+      let resta = total;
+      while(resta>0){
+        if(resta>=2 && Math.random()<0.6){ coins.push(2); resta-=2; }
+        else { coins.push(1); resta-=1; }
+      }
+    }
+    const answer = bitllet + coins.reduce((s,v)=>s+v,0);
+    const parts = [];
+    if(bitllet) parts.push(`<div class="bill">${bitllet} €</div>`);
+    shuffle(coins).forEach(v=>parts.push(`<div class="coin${v===2?' coin2':''}">${v} €</div>`));
+    const options = uniqueOptions(answer, Math.max(1,answer-4), answer+4, 4).map(n=>`${n} €`);
+    return {
+      type:'monedes',
+      label:'Monedes 💰',
+      question:'Quants euros hi ha en total?',
+      visualHTML:`<div class="visual-row"><div class="group" style="max-width:340px;">${parts.join('')}</div></div>`,
+      options,
+      answer:`${answer} €`
+    };
+  }
+
+  function genFindNumberP(){
+    const maxN = state.level===1 ? 5 : (state.level===2 ? 9 : 10);
+    const n = rand(1,maxN);
+    const options = uniqueOptions(n, 1, Math.max(6,maxN), 3);
+    return {
+      type:'reconeixer',
+      label:'Busca el número 🔎',
+      question:`Busca el número ${n}! On és?`,
+      visualHTML:`<div class="visual-row"><span style="background:white;border:3px solid #dbe9ff;border-radius:18px;padding:10px 26px;font-size:3rem;font-weight:bold;color:#5b4bc4;">${n}</span></div>`,
+      options,
+      answer:n
+    };
+  }
+
+  const GEN_GRANS = [genAddition, genSubtraction, genMissingNumber, genDoubleHalf, genCompare, genSequence, genGeometry, genClock, genOrder, genWordProblem, genMoney];
+  const GEN_PETITS = [genCountP, genCountP, genAddP, genSubP, genCompareGroupsP, genShapeP, genColorP, genPatternP, genBigSmallP, genFindNumberP, genWordProblemP];
+  function currentGenerators(){
+    return activeProfile && activeProfile.group==='petits' ? GEN_PETITS : GEN_GRANS;
+  }
+  let lastType = null;
+
+  function newRound(){
+    let gen = pick(currentGenerators());
+    let round = gen();
+    let tries=0;
+    while(round.type===lastType && tries<5){
+      gen = pick(currentGenerators());
+      round = gen();
+      tries++;
+    }
+    lastType = round.type;
+    state.current = round;
+    renderRound();
+  }
+
+  function renderRound(){
+    const r = state.current;
+    document.getElementById('gameLabel').textContent = r.label;
+    document.getElementById('question').textContent = r.question;
+    document.getElementById('visualArea').innerHTML = r.visualHTML || '';
+    document.getElementById('feedback').textContent = '';
+    document.getElementById('feedback').className = 'feedback';
+    document.getElementById('nextBtn').style.display = 'none';
+    state.roundStartTime = Date.now();
+
+    const grid = document.getElementById('optionsGrid');
+    grid.innerHTML = '';
+    r.options.forEach(opt=>{
+      const btn = document.createElement('button');
+      btn.className = 'option-btn';
+      btn.textContent = opt;
+      btn.onclick = ()=>handleAnswer(opt, btn);
+      grid.appendChild(btn);
+    });
+  }
+
+  function handleAnswer(opt, btn){
+    const r = state.current;
+    const correct = (opt === r.answer);
+    const elapsed = state.roundStartTime ? (Date.now() - state.roundStartTime) : null;
+    const allBtns = document.querySelectorAll('.option-btn');
+    allBtns.forEach(b=>b.disabled = true);
+
+    const fb = document.getElementById('feedback');
+    const mascot = document.getElementById('mascot');
+
+    if(correct){
+      btn.classList.add('correct');
+      state.stars++;
+      state.streakCorrect++;
+      state.streakWrong = 0;
+      if(elapsed!==null && elapsed<=fastMs()){ state.fastStreak++; } else { state.fastStreak = 0; }
+      if(elapsed!==null && elapsed>=slowMs()){ state.slowStreak++; } else { state.slowStreak = 0; }
+      fb.textContent = pick(['Molt bé! 🎉','Genial! 🌟','Perfecte! 👏','Ho has clavat! ✨']);
+      fb.className = 'feedback good';
+      mascot.classList.remove('sad');
+      mascot.classList.add('bounce');
+      launchConfetti();
+    } else {
+      btn.classList.add('wrong');
+      allBtns.forEach(b=>{ if(b.textContent==String(r.answer)) b.classList.add('correct'); });
+      state.streakWrong++;
+      state.streakCorrect=0;
+      state.fastStreak = 0;
+      state.slowStreak++;
+      fb.textContent = `Gairebé! La resposta correcta és ${r.answer}. Ho tornarem a provar! 💪`;
+      fb.className = 'feedback bad';
+      mascot.classList.remove('bounce');
+      mascot.classList.add('sad');
+    }
+
+    // Puja de nivell si encerta molt (3 seguides) o si ho fa molt ràpid i bé (2 seguides).
+    if(state.level<3 && (state.streakCorrect>=3 || state.fastStreak>=2)){
+      state.level++;
+      state.streakCorrect=0; state.fastStreak=0; state.slowStreak=0;
+      fb.textContent += ' Pugem de nivell! 🚀';
+    // Baixa de nivell si falla dues seguides, o si respon molt lent (encara que encerti) dues seguides.
+    } else if(state.level>1 && (state.streakWrong>=2 || state.slowStreak>=2)){
+      state.level--;
+      state.streakWrong=0; state.slowStreak=0; state.fastStreak=0;
+    }
+    state.bestLevel = Math.max(state.bestLevel, state.level);
+
+    state.history.push({ level: state.level, correct, elapsedMs: elapsed, type: r.type });
+    persistProfile();
+
+    setTimeout(()=>{ mascot.classList.remove('bounce','sad'); }, 650);
+
+    updateStats();
+    document.getElementById('nextBtn').style.display = 'inline-block';
+  }
+
+  function updateStats(){
+    document.getElementById('starCount').textContent = state.stars;
+    document.getElementById('levelNum').textContent = state.level;
+    const pct = Math.min(100, (state.streakCorrect/3)*100);
+    document.getElementById('progressFill').style.width = pct + '%';
+  }
+
+  function launchConfetti(){
+    const emojis = ['🎉','⭐','✨','🎈','🌟'];
+    for(let i=0;i<12;i++){
+      const el = document.createElement('div');
+      el.className = 'confetti';
+      el.textContent = pick(emojis);
+      el.style.left = rand(2,96) + 'vw';
+      el.style.animationDuration = (rand(12,22)/10) + 's';
+      document.body.appendChild(el);
+      setTimeout(()=> el.remove(), 2400);
+    }
+  }
+
+  // ---------- ESTADÍSTIQUES (compartides entre el dashboard i la zona de pares) ----------
+
+  function computeStats(h){
+    const total = h.length;
+    const correctCount = h.filter(x=>x.correct).length;
+    const accuracy = total ? Math.round(100*correctCount/total) : 0;
+    const timed = h.filter(x=>typeof x.elapsedMs==='number');
+    const avgTime = timed.length ? (timed.reduce((s,x)=>s+x.elapsedMs,0)/timed.length/1000) : 0;
+    const byType = {};
+    h.forEach(x=>{
+      if(!byType[x.type]) byType[x.type] = {total:0, correct:0};
+      byType[x.type].total++;
+      if(x.correct) byType[x.type].correct++;
+    });
+    return {total, accuracy, avgTime, byType};
+  }
+
+  // Retorna l'HTML de les barres d'encerts per tipus ('' si no hi ha historial)
+  function typeBarsHTML(byType){
+    return Object.keys(byType).map(t=>{
+      const info = byType[t];
+      const pct = Math.round(100*info.correct/info.total);
+      return `<div class="type-bar-row"><div class="type-bar-label">${TYPE_LABELS[t]||t}</div>
+        <div class="type-bar-track"><div class="type-bar-fill" style="width:${pct}%;"></div></div>
+        <div class="type-bar-count">${info.correct}/${info.total}</div></div>`;
+    }).join('');
+  }
+
+  // ---------- DASHBOARD ----------
+  function renderDashboard(){
+    const h = state.history;
+    const s = computeStats(h);
+
+    document.getElementById('statTotal').textContent = s.total;
+    document.getElementById('statAccuracy').textContent = s.accuracy + '%';
+    document.getElementById('statAvgTime').textContent = s.avgTime.toFixed(1) + 's';
+    document.getElementById('statBestLevel').textContent = state.bestLevel;
+
+    document.getElementById('typeBars').innerHTML = typeBarsHTML(s.byType) ||
+      '<div style="text-align:center;color:#a0a0bf;font-size:0.85rem;margin-bottom:12px;">Encara no has jugat cap ronda.</div>';
+    drawEvolutionChart(document.getElementById('evolutionChart'), h);
+  }
+
+  function drawEvolutionChart(canvas, h){
+    const ctx = canvas.getContext && canvas.getContext('2d');
+    if(!ctx) return;
+    const w = canvas.width, hgt = canvas.height;
+    ctx.clearRect(0,0,w,hgt);
+    if(h.length===0){
+      ctx.fillStyle = '#a0a0bf';
+      ctx.font = '13px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText("Juga alguna ronda per veure l'evolució", w/2, hgt/2);
+      return;
+    }
+    const padding = 14;
+    const maxPoints = 40;
+    const points = h.slice(-maxPoints);
+    const stepX = points.length>1 ? (w - padding*2) / (points.length-1) : 0;
+    const levelToY = (lvl)=> hgt - padding - ((lvl-1)/2)*(hgt - padding*2);
+
+    ctx.strokeStyle = '#e6ecf7';
+    ctx.lineWidth = 1;
+    [1,2,3].forEach(lvl=>{
+      const y = levelToY(lvl);
+      ctx.beginPath();
+      ctx.moveTo(padding, y);
+      ctx.lineTo(w-padding, y);
+      ctx.stroke();
+    });
+
+    ctx.strokeStyle = '#5b4bc4';
+    ctx.lineWidth = 2.5;
+    ctx.beginPath();
+    points.forEach((p,i)=>{
+      const x = padding + i*stepX;
+      const y = levelToY(p.level);
+      if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+    });
+    ctx.stroke();
+
+    points.forEach((p,i)=>{
+      const x = padding + i*stepX;
+      const y = levelToY(p.level);
+      ctx.beginPath();
+      ctx.arc(x,y,4,0,Math.PI*2);
+      ctx.fillStyle = p.correct ? '#3e9c6c' : '#e05f83';
+      ctx.fill();
+    });
+  }
+
+  function openDashboard(){
+    if('speechSynthesis' in window) window.speechSynthesis.cancel();
+    renderDashboard();
+    document.getElementById('dashboardPanel').classList.add('open');
+    document.getElementById('gameCard').style.display = 'none';
+  }
+  function closeDashboard(){
+    document.getElementById('dashboardPanel').classList.remove('open');
+    document.getElementById('gameCard').style.display = 'flex';
+  }
+
+  // ---------- ZONA DE PARES ----------
+
+  function tempsRelatiu(ts){
+    if(typeof ts !== 'number') return 'encara no ha jugat';
+    const dies = Math.floor((Date.now()-ts)/86400000);
+    if(dies<=0) return 'avui';
+    if(dies===1) return 'ahir';
+    return `fa ${dies} dies`;
+  }
+
+  function openParentZone(){
+    document.getElementById('profileScreen').style.display = 'none';
+    document.getElementById('parentPanel').classList.add('open');
+    const wrap = document.getElementById('parentCards');
+    wrap.innerHTML = '';
+    if(profiles.length===0){
+      wrap.innerHTML = '<div style="text-align:center;color:#a0a0bf;">Encara no hi ha cap perfil creat.</div>';
+    }
+    profiles.forEach((p, idx)=>{
+      const h = p.history || [];
+      const s = computeStats(h);
+      // Tipus amb prou intents i pocs encerts: candidats a practicar més
+      const perReforcar = Object.keys(s.byType).filter(t=>{
+        const info = s.byType[t];
+        return info.total>=5 && (100*info.correct/info.total)<60;
+      }).map(t=>TYPE_LABELS[t]||t);
+      const card = document.createElement('div');
+      card.className = 'parent-card';
+      card.innerHTML = `
+        <div class="parent-head">
+          <span class="parent-avatar">${p.avatar}</span>
+          <div>
+            <div class="parent-name">${p.name} · ⭐ ${p.stars||0} · Nivell ${p.level||1}</div>
+            <div class="parent-sub">${GROUP_LABELS[p.group]||''} · Última partida: ${tempsRelatiu(p.lastPlayed)}</div>
+          </div>
+        </div>
+        <div class="stat-grid">
+          <div class="stat-card"><div class="stat-value">${s.total}</div><div class="stat-label">Preguntes</div></div>
+          <div class="stat-card"><div class="stat-value">${s.accuracy}%</div><div class="stat-label">Encerts</div></div>
+          <div class="stat-card"><div class="stat-value">${s.avgTime.toFixed(1)}s</div><div class="stat-label">Temps mitjà</div></div>
+          <div class="stat-card"><div class="stat-value">${p.bestLevel||1}</div><div class="stat-label">Nivell més alt</div></div>
+        </div>
+        <div class="parent-types">${typeBarsHTML(s.byType) || '<div style="text-align:center;color:#a0a0bf;font-size:0.85rem;">Encara no ha jugat cap ronda.</div>'}</div>
+        <div class="evolution-wrap">
+          <div class="stat-label" style="text-align:center;margin-bottom:6px;">Evolució del nivell per pregunta</div>
+          <canvas id="parentChart${idx}" width="560" height="110" style="width:100%;height:110px;"></canvas>
+        </div>
+        ${perReforcar.length ? `<div class="parent-tip">💡 Li anirà bé practicar una mica més: <b>${perReforcar.join(', ')}</b></div>` : ''}`;
+      wrap.appendChild(card);
+    });
+    profiles.forEach((p, idx)=>{
+      drawEvolutionChart(document.getElementById('parentChart'+idx), p.history || []);
+    });
+  }
+
+  function closeParentZone(){
+    document.getElementById('parentPanel').classList.remove('open');
+    document.getElementById('profileScreen').style.display = 'block';
+  }
+
+  // ---------- GESTIÓ DE PERFILS ----------
+
+  // Els perfils es desen al localStorage del navegador. Si no està disponible
+  // (mode privat, permisos...), el joc funciona igualment però el progrés
+  // només dura mentre la pestanya és oberta.
+  const STORAGE_KEY = 'mates-profiles';
+
+  function loadProfiles(){
+    try{
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if(raw){
+        const dades = JSON.parse(raw);
+        if(Array.isArray(dades)) return dades;
+      }
+    }catch(e){ /* primera vegada o dades corruptes: comencem de zero */ }
+    return [];
+  }
+
+  function saveProfiles(){
+    try{
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(profiles));
+    }catch(e){ /* si no es pot desar, el joc continua en memòria */ }
+  }
+
+  function persistProfile(){
+    if(!activeProfile) return;
+    activeProfile.stars = state.stars;
+    activeProfile.level = state.level;
+    activeProfile.bestLevel = state.bestLevel;
+    activeProfile.history = state.history.slice(-200);
+    activeProfile.lastPlayed = Date.now();
+    saveProfiles();
+  }
+
+  function setGameVisible(v){
+    document.getElementById('profileScreen').style.display = v ? 'none' : 'block';
+    document.getElementById('mascotRow').style.display = v ? 'flex' : 'none';
+    document.getElementById('progressBar').style.display = v ? 'block' : 'none';
+    document.getElementById('gameCard').style.display = v ? 'flex' : 'none';
+    document.getElementById('statsBar').style.display = v ? 'flex' : 'none';
+    document.getElementById('dashboardPanel').classList.remove('open');
+  }
+
+  function renderProfileScreen(){
+    const cards = document.getElementById('profileCards');
+    cards.innerHTML = '';
+    profiles.forEach((p, idx)=>{
+      const card = document.createElement('div');
+      card.className = 'profile-card';
+      card.innerHTML = `<div class="profile-avatar">${p.avatar}</div>
+        <div class="profile-name">${p.name}</div>
+        <div class="profile-age">${GROUP_LABELS[p.group]||''}</div>
+        <div class="profile-stars">⭐ ${p.stars||0}</div>`;
+      card.onclick = ()=> startGame(p);
+      const del = document.createElement('button');
+      del.className = 'profile-delete';
+      del.textContent = '✕';
+      del.title = 'Esborrar perfil';
+      del.onclick = (ev)=>{
+        ev.stopPropagation();
+        if(confirm(`Segur que vols esborrar el perfil de ${p.name}? Es perdran les seves estrelles.`)){
+          profiles.splice(idx,1);
+          saveProfiles();
+          renderProfileScreen();
+        }
+      };
+      card.appendChild(del);
+      cards.appendChild(card);
+    });
+    const add = document.createElement('div');
+    add.className = 'profile-card profile-add';
+    add.innerHTML = '<div class="profile-avatar">➕</div><div class="profile-name">Nou perfil</div>';
+    add.onclick = openProfileForm;
+    cards.appendChild(add);
+    document.getElementById('profileForm').style.display = 'none';
+    // Si encara no hi ha cap perfil, obrim el formulari directament
+    if(profiles.length===0){ openProfileForm(); }
+  }
+
+  let selAvatar = null, selGroup = null;
+
+  function openProfileForm(){
+    const form = document.getElementById('profileForm');
+    form.style.display = 'block';
+    // Si encara no hi ha cap perfil no es pot "tornar enrere": cal crear-ne un
+    document.getElementById('pfCancel').style.display = profiles.length ? 'block' : 'none';
+    document.getElementById('pfName').value = '';
+    selAvatar = AVATARS[rand(0, AVATARS.length-1)];
+    selGroup = null;
+    const av = document.getElementById('pfAvatars');
+    av.innerHTML = '';
+    AVATARS.forEach(a=>{
+      const b = document.createElement('button');
+      b.className = 'pf-chip avatar' + (a===selAvatar ? ' selected' : '');
+      b.textContent = a;
+      b.onclick = ()=>{
+        selAvatar = a;
+        av.querySelectorAll('.pf-chip').forEach(c=>c.classList.remove('selected'));
+        b.classList.add('selected');
+      };
+      av.appendChild(b);
+    });
+    const gr = document.getElementById('pfGroups');
+    gr.innerHTML = '';
+    [['petits','4-5 anys (Infantil)'],['grans','6-7 anys (1r Primària)']].forEach(([g,label])=>{
+      const b = document.createElement('button');
+      b.className = 'pf-chip';
+      b.textContent = label;
+      b.onclick = ()=>{
+        selGroup = g;
+        gr.querySelectorAll('.pf-chip').forEach(c=>c.classList.remove('selected'));
+        b.classList.add('selected');
+      };
+      gr.appendChild(b);
+    });
+    document.getElementById('pfName').focus();
+  }
+
+  document.getElementById('pfCreate').addEventListener('click', ()=>{
+    const name = document.getElementById('pfName').value.trim();
+    if(!name){ alert('Escriu el teu nom! 😊'); return; }
+    if(!selGroup){ alert("Tria quants anys tens! 😊"); return; }
+    const p = { name, avatar:selAvatar, group:selGroup, stars:0, level:1, bestLevel:1, history:[] };
+    profiles.push(p);
+    saveProfiles();
+    startGame(p);
+  });
+
+  function startGame(p){
+    activeProfile = p;
+    state.level = p.level || 1;
+    state.stars = p.stars || 0;
+    state.bestLevel = p.bestLevel || 1;
+    state.history = (p.history || []).slice();
+    state.streakCorrect = 0;
+    state.streakWrong = 0;
+    state.fastStreak = 0;
+    state.slowStreak = 0;
+    lastType = null;
+    document.getElementById('mascot').textContent = p.avatar;
+    document.getElementById('playerChip').textContent = `${p.avatar} ${p.name}`;
+    setGameVisible(true);
+    updateStats();
+    newRound();
+    speak(`Hola ${p.name}! Juguem?`);
+  }
+
+  // Reinicia el progrés del perfil actiu (estrelles, nivell i historial),
+  // però conserva el perfil (nom, mascota, edat).
+  function resetProgress(){
+    if(!activeProfile) return;
+    if(!confirm(`Segur que vols reiniciar el progrés de ${activeProfile.name}? Les estrelles i el nivell tornaran a començar de zero.`)) return;
+    activeProfile.stars = 0;
+    activeProfile.level = 1;
+    activeProfile.bestLevel = 1;
+    activeProfile.history = [];
+    saveProfiles();
+    startGame(activeProfile);
+  }
+
+  function showProfileScreen(){
+    if('speechSynthesis' in window) window.speechSynthesis.cancel();
+    persistProfile();
+    activeProfile = null;
+    setGameVisible(false);
+    renderProfileScreen();
+  }
+
+  document.getElementById('nextBtn').addEventListener('click', newRound);
+  document.getElementById('speakBtn').addEventListener('click', ()=>{ if(state.current) speak(state.current.question); });
+  document.getElementById('dashboardBtn').addEventListener('click', openDashboard);
+  document.getElementById('dashboardClose').addEventListener('click', closeDashboard);
+  document.getElementById('dashboardReset').addEventListener('click', resetProgress);
+  document.getElementById('switchBtn').addEventListener('click', showProfileScreen);
+  document.getElementById('pfCancel').addEventListener('click', ()=>{
+    document.getElementById('profileForm').style.display = 'none';
+  });
+  document.getElementById('parentBtn').addEventListener('click', openParentZone);
+  document.getElementById('parentClose').addEventListener('click', closeParentZone);
+
+  // init: carreguem perfils desats i mostrem la pantalla de selecció
+  (function init(){
+    if(!ttsAvailable()){
+      document.getElementById('speakBtn').style.display = 'none';
+    }
+    profiles = loadProfiles();
+    setGameVisible(false);
+    renderProfileScreen();
+  })();
+})();
+</script>
+</body>
+</html>
