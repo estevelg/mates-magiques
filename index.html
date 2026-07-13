@@ -672,6 +672,7 @@
       <span class="player-chip" id="playerChip"></span>
       <span class="stars">⭐ <span id="starCount">0</span></span>
       <span class="level-badge">Nivell <span id="levelNum">1</span></span>
+      <button class="icon-btn" id="soundBtn" title="Activar o silenciar els sons">🔔</button>
       <button class="icon-btn" id="dashboardBtn" title="Estadístiques">📊</button>
       <button class="icon-btn" id="switchBtn" title="Desar i canviar de jugadora">👧</button>
     </div>
@@ -880,6 +881,65 @@
         }catch(e){}
       }, 80);
     }catch(e){ /* entorn sense permís d'àudio: seguim sense veu */ }
+  }
+
+  // ---------- SONS (Web Audio, sense fitxers: tot generat al navegador) ----------
+  let audioCtx = null;
+  let soActivat = true;
+  try{ soActivat = localStorage.getItem('mates-so') !== 'off'; }catch(e){}
+
+  function getAudioCtx(){
+    if(!soActivat) return null;
+    try{
+      const AC = window.AudioContext || window.webkitAudioContext;
+      if(!AC) return null;
+      if(!audioCtx) audioCtx = new AC();
+      if(audioCtx.state === 'suspended') audioCtx.resume();
+      return audioCtx;
+    }catch(e){ return null; }
+  }
+
+  function nota(ctx, freq, tIni, durada, tipus, volum){
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = tipus;
+    osc.frequency.value = freq;
+    const t0 = ctx.currentTime + tIni;
+    gain.gain.setValueAtTime(0.0001, t0);
+    gain.gain.exponentialRampToValueAtTime(volum, t0 + 0.02);
+    gain.gain.exponentialRampToValueAtTime(0.0001, t0 + durada);
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.start(t0);
+    osc.stop(t0 + durada + 0.05);
+  }
+
+  // Arpegi alegre: do5 - mi5 - sol5
+  function soEncert(){
+    const ctx = getAudioCtx(); if(!ctx) return;
+    nota(ctx, 523.25, 0,    0.15, 'triangle', 0.25);
+    nota(ctx, 659.25, 0.09, 0.15, 'triangle', 0.25);
+    nota(ctx, 783.99, 0.18, 0.22, 'triangle', 0.25);
+  }
+  // Suau i amable, gens estrident: dues notes descendents fluixetes
+  function soErrada(){
+    const ctx = getAudioCtx(); if(!ctx) return;
+    nota(ctx, 330, 0,    0.18, 'sine', 0.16);
+    nota(ctx, 262, 0.15, 0.25, 'sine', 0.13);
+  }
+  // Escaleta ascendent quan puja de nivell
+  function soNivell(){
+    const ctx = getAudioCtx(); if(!ctx) return;
+    [523.25, 587.33, 659.25, 783.99, 1046.5].forEach((f,i)=> nota(ctx, f, i*0.08, 0.14, 'triangle', 0.22));
+  }
+  // Fanfara del final de bloc
+  function soFanfara(){
+    const ctx = getAudioCtx(); if(!ctx) return;
+    [523.25, 659.25, 783.99, 1046.5, 783.99, 1046.5].forEach((f,i)=> nota(ctx, f, i*0.12, 0.2, 'triangle', 0.22));
+  }
+
+  function actualitzarBotoSo(){
+    document.getElementById('soundBtn').textContent = soActivat ? '🔔' : '🔕';
   }
 
   function emojiName(e){
@@ -2412,16 +2472,21 @@
     }
 
     // Puja de nivell si encerta molt (3 seguides) o si ho fa molt ràpid i bé (2 seguides).
+    let pujaDeNivell = false;
     if(state.level<3 && (state.streakCorrect>=3 || state.fastStreak>=2)){
       state.level++;
       state.streakCorrect=0; state.fastStreak=0; state.slowStreak=0;
       fb.textContent += ' Pugem de nivell! 🚀';
+      pujaDeNivell = true;
     // Baixa de nivell si falla dues seguides, o si respon molt lent (encara que encerti) dues seguides.
     } else if(state.level>1 && (state.streakWrong>=2 || state.slowStreak>=2)){
       state.level--;
       state.streakWrong=0; state.slowStreak=0; state.fastStreak=0;
     }
     state.bestLevel = Math.max(state.bestLevel, state.level);
+
+    if(correct){ if(pujaDeNivell){ soNivell(); } else { soEncert(); } }
+    else { soErrada(); }
 
     state.history.push({ level: state.level, correct, elapsedMs: elapsed, type: r.type });
     state.blockAnswered++;
@@ -2582,7 +2647,8 @@
     document.getElementById('blockEndMsg').textContent = missatge;
     document.getElementById('gameCard').style.display = 'none';
     document.getElementById('blockEndPanel').classList.add('open');
-    if(encerts >= 7) launchConfetti();
+    if(encerts >= 7){ launchConfetti(); soFanfara(); }
+    else { soEncert(); }
   }
 
   function startBlock(){
@@ -2865,12 +2931,19 @@
   });
   document.getElementById('parentBtn').addEventListener('click', openParentZone);
   document.getElementById('parentClose').addEventListener('click', closeParentZone);
+  document.getElementById('soundBtn').addEventListener('click', ()=>{
+    soActivat = !soActivat;
+    try{ localStorage.setItem('mates-so', soActivat ? 'on' : 'off'); }catch(e){}
+    actualitzarBotoSo();
+    if(soActivat) soEncert(); // confirmació sonora que el so torna a estar actiu
+  });
 
   // init: carreguem perfils desats i mostrem la pantalla de selecció
   (function init(){
     if(!ttsAvailable()){
       document.getElementById('speakBtn').style.display = 'none';
     }
+    actualitzarBotoSo();
     profiles = loadProfiles();
     setGameVisible(false);
     renderProfileScreen();

@@ -83,7 +83,13 @@ El joc ja té implementat:
    selector (pensat per al pas de curs al setembre).
 9. **Navegació**: botó "↩️ Torna enrere" al formulari de perfil nou (visible només
    si ja existeix algun perfil); el botó 👧 desa i torna a la selecció de jugadora.
-10. **Blocs de 10 preguntes** (2026-07-13): les partides van per rondes de 10, amb
+10. **Sons** (2026-07-13): efectes generats amb Web Audio (cap fitxer d'àudio):
+    arpegi alegre en encertar, dues notes suaus i gens estridents en fallar,
+    escaleta en pujar de nivell i fanfara al final del bloc (amb ≥7 encerts).
+    Botó 🔔/🔕 a la barra superior per silenciar-los; la preferència es desa a
+    localStorage (clau `mates-so`). Tot amb try/catch: si Web Audio no hi és,
+    el joc continua en silenci.
+11. **Blocs de 10 preguntes** (2026-07-13): les partides van per rondes de 10, amb
     comptador "Pregunta X de 10", barra de progrés del bloc (abans mostrava la
     ratxa d'encerts — canvi respecte a `docs/prompt-original.md`) i pantalla final
     amb el recompte, missatge sempre positiu i botons "Una altra ronda!" / "Plego
