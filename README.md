@@ -1,10 +1,11 @@
 # 🦊 El Món Màgic dels Números
 
-Joc educatiu **de matemàtiques i de llengua catalana** per a nens i nenes
+Joc educatiu **de matemàtiques, llengua catalana i música** per a nens i nenes
 **d'Infantil 3 (P3) fins a 6è de Primària**: cada perfil tria el seu curs i, a
-cada sessió, l'àrea (Números 🔢 o Lletres 📚). El joc adapta els reptes a
-l'itinerari curricular corresponent (LOMLOE) — de comptar i les vocals fins a
-percentatges i frases fetes — amb dificultat adaptativa per àrea dins de cada
+cada sessió, l'àrea (Números 🔢, Lletres 📚 o Música 🎵). El joc adapta els
+reptes a l'itinerari curricular corresponent — de comptar i les vocals fins a
+percentatges, frases fetes i el pentagrama, amb exercicis d'oïda de debò
+(sons generats al navegador) — amb dificultat adaptativa per àrea dins de cada
 curs, veu en català i estadístiques.
 Inclou una **zona de pares** (enllaç al peu de la pantalla de perfils) amb el
 seguiment de cada perfil — encerts per tipus de repte, evolució, última

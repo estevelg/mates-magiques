@@ -9,8 +9,9 @@ Un joc educatiu de matemàtiques en **català**. Va néixer per a les dues fille
 l'usuari (una acabant Infantil-3 i l'altra acabant 1r de Primària) i des del
 2026-07-13 cada perfil tria el seu **curs** — d'Infantil 3 (P3) fins a 6è de
 Primària — amb l'itinerari de continguts corresponent (vegeu el punt 2). Des del
-2026-07-14 hi ha **dues àrees**: Números 🔢 (matemàtiques) i Lletres 📚 (llengua
-catalana, vegeu el punt 12); es trien en una pantalla després del perfil.
+2026-07-14 hi ha **tres àrees**: Números 🔢 (matemàtiques), Lletres 📚 (llengua
+catalana, punt 12) i Música 🎵 (punt 13); es trien en una pantalla després del
+perfil, i cada àrea té el seu nivell adaptatiu.
 
 Tot el joc viu en un únic fitxer estàtic: **`index.html`** (HTML + CSS + JS vanilla, sense
 frameworks ni backend). Funciona obrint el fitxer directament al navegador.
@@ -127,10 +128,35 @@ El joc ja té implementat:
     - **Nivell adaptatiu per àrea**: `p.nivells = {mates, lletres}` amb migració
       automàtica dels perfils antics; l'historial guarda `area` a cada resposta
       i la zona de pares mostra els nivells i un gràfic d'evolució per àrea.
-    - **Desviació documentada del prompt original**: a l'àrea de Lletres amb
-      cursos d'infantil, la pregunta es llegeix sola en veu alta en aparèixer
-      (un nen que no llegeix no hi podria jugar); a Primària la veu segueix
-      sent només manual (botó 🔊).
+    - **Desviació documentada del prompt original**: a les àrees de Lletres i
+      Música amb cursos d'infantil, la pregunta es llegeix sola en veu alta en
+      aparèixer (un nen que no llegeix no hi podria jugar); a Primària la veu
+      segueix sent només manual (botó 🔊).
+13. **Àrea de Música** (2026-07-14): itinerari d'Educació Artística - música
+    (Decret 175/2022; Decret 21/2023 a Infantil), mapa `GENS_MUSICA`:
+    - **Educació de l'oïda real amb Web Audio**: les rondes porten una funció
+      `reproduir` i `renderRound` hi afegeix el botó "🔁 Torna-ho a escoltar" i
+      una reproducció automàtica en aparèixer (després de la veu, a infantil).
+      La reproducció musical usa `getAudioCtxMusica()` i **ignora el botó 🔕**
+      (que només silencia els efectes d'encert/errada): sense so, l'exercici
+      d'oïda no es pot resoldre.
+    - **I3**: fort/fluix, llarg/curt, ràpid/lent, comptar notes (fins a 3),
+      cançons populars catalanes (reconèixer-les per un vers, llegit amb TTS).
+    - **I4-I5**: + agut/greu, la melodia puja o baixa, més notes per comptar,
+      instruments bàsics (emoji).
+    - **1r-2n**: comparar sons per qualsevol qualitat, figures negra/blanca
+      (+rodona a 2n) amb les durades, famílies d'instruments (corda, vent,
+      percussió; el piano queda fora del joc de famílies expressament).
+    - **3r-4t**: pentagrama en clau de sol (SVG propi; 3r: do-sol, 4t: do-si),
+      corxera, compassos 2/4-3/4-4/4, suma de temps de figures, la sardana i la
+      cobla.
+    - **5è-6è**: tempo italià (adagio/andante/allegro), dinàmiques (p, f,
+      crescendo), pentagrama fluid (fins a mi5), la cobla al detall (tenora,
+      tible, flabiol), compositors (Pau Casals, Mozart, Beethoven, Vivaldi).
+    - Bancs: `INSTRUMENTS`, `FIGURES` (SVG propi, res d'Unicode musical),
+      `CANCONS`, `TEMPO_DINAMIQUES`, `CULTURA_COBLA`, `COMPOSITORS`. Les notes
+      del pentagrama es dibuixen amb `pentagramaSVG(idx)` (índex diatònic 0=do4;
+      sol4 cau a la segona línia, com toca en clau de sol).
 
 ## Restriccions pedagògiques (NO trencar)
 

@@ -596,6 +596,21 @@
     border-right:70px solid transparent;
     border-bottom:100px solid var(--verd);
   }
+  .replay-btn{
+    display:block;
+    margin:10px auto 0;
+    font-family:inherit;
+    font-size:0.95rem;
+    font-weight:bold;
+    padding:9px 18px;
+    border-radius:16px;
+    border:none;
+    background:var(--morat);
+    color:white;
+    cursor:pointer;
+    box-shadow:0 4px 0 #9a86d0;
+  }
+  .replay-btn:active{ transform:translateY(2px); box-shadow:0 1px 0 #9a86d0; }
   .parent-curs{
     font-family:inherit;
     font-size:0.8rem;
@@ -713,6 +728,11 @@
         <div class="profile-name">Lletres</div>
         <div class="profile-age">llegir, rimes, paraules...</div>
       </div>
+      <div class="profile-card" id="areaMusica">
+        <div class="profile-avatar">🎵</div>
+        <div class="profile-name">Música</div>
+        <div class="profile-age">escoltar, notes, cançons...</div>
+      </div>
     </div>
   </div>
 
@@ -824,7 +844,7 @@
   const COLORS = ['#ff8fab','#4fc3f7','#ffd54f','#81d4a2','#b39ddb','#ff9e6d'];
   const OBJECT_EMOJIS = ['🍎','⭐','🎈','🐟','🍓','🚗','🐝','🍪','🐸','🌸','🦆','🍌','⚽','🐢','🧸','🍩'];
   const SHAPE_NAMES = {circle:'Cercle', square:'Quadrat', triangle:'Triangle', rectangle:'Rectangle', star:'Estrella'};
-  const TYPE_LABELS = {suma:'Sumes', resta:'Restes', incognita:'Troba el número', dobles:'Dobles i meitats', compara:'Comparar', sequencia:'Seqüències', geometria:'Formes', rellotge:'Rellotge', comptar:'Comptar', colors:'Colors', mida:'Gran i petit', ordenar:'Ordenar nombres', problema:'Problemes', monedes:'Monedes', reconeixer:'Busca el número', multiplicacio:'Multiplicar', divisio:'Dividir', fraccions:'Fraccions', decimals:'Decimals', percentatge:'Percentatges', mesura:'Mesures', parell:'Parells i senars', operacions:'Operacions combinades', mitjana:'Mitjana', proporcio:'Proporcions', temperatura:'Temperatura', angles:'Angles', perimetre:'Perímetre i àrea', multiples:'Múltiples i divisors', diferent:'Quin és diferent', daus:'El dau', llargada:'Llarg i curt', lletres:'Les lletres', sillabes:'Síl·labes', rimes:'Rimes', lectura:'Lectura', gramatica:'Gramàtica', frases:'Ordenar frases', intrus:'L\'intrús', sinonims:'Sinònims', antonims:'Contraris', ortografia:'Ortografia', alfabet:'Ordre alfabètic', accents:'Accentuació', frasesfetes:'Frases fetes', verbs:'Els verbs'};
+  const TYPE_LABELS = {suma:'Sumes', resta:'Restes', incognita:'Troba el número', dobles:'Dobles i meitats', compara:'Comparar', sequencia:'Seqüències', geometria:'Formes', rellotge:'Rellotge', comptar:'Comptar', colors:'Colors', mida:'Gran i petit', ordenar:'Ordenar nombres', problema:'Problemes', monedes:'Monedes', reconeixer:'Busca el número', multiplicacio:'Multiplicar', divisio:'Dividir', fraccions:'Fraccions', decimals:'Decimals', percentatge:'Percentatges', mesura:'Mesures', parell:'Parells i senars', operacions:'Operacions combinades', mitjana:'Mitjana', proporcio:'Proporcions', temperatura:'Temperatura', angles:'Angles', perimetre:'Perímetre i àrea', multiples:'Múltiples i divisors', diferent:'Quin és diferent', daus:'El dau', llargada:'Llarg i curt', lletres:'Les lletres', sillabes:'Síl·labes', rimes:'Rimes', lectura:'Lectura', gramatica:'Gramàtica', frases:'Ordenar frases', intrus:'L\'intrús', sinonims:'Sinònims', antonims:'Contraris', ortografia:'Ortografia', alfabet:'Ordre alfabètic', accents:'Accentuació', frasesfetes:'Frases fetes', verbs:'Els verbs', qualitats:'Qualitats del so', oida:'Educació de l\'oïda', instruments:'Instruments', figures:'Figures musicals', pentagrama:'El pentagrama', compas:'El compàs', cancons:'Cançons', tempo:'Tempo i dinàmica', cultura:'Cultura musical', compositors:'Compositors'};
 
   function rand(min,max){ return Math.floor(Math.random()*(max-min+1))+min; }
   function pick(arr){ return arr[rand(0,arr.length-1)]; }
@@ -2754,6 +2774,319 @@
     };
   }
 
+  // ---------- ÀREA DE MÚSICA: ÀUDIO ----------
+  // Context d'àudio per als exercicis d'oïda: NO depèn del botó 🔕 (que només
+  // silencia els efectes d'encert/errada), perquè sense so no es pot resoldre.
+  function getAudioCtxMusica(){
+    try{
+      const AC = window.AudioContext || window.webkitAudioContext;
+      if(!AC) return null;
+      if(!audioCtx) audioCtx = new AC();
+      if(audioCtx.state === 'suspended') audioCtx.resume();
+      return audioCtx;
+    }catch(e){ return null; }
+  }
+
+  // Escala de do4 a do6 (freqüències temperades), per índex diatònic
+  const NOTES_FREQ = [261.63, 293.66, 329.63, 349.23, 392.00, 440.00, 493.88,
+                      523.25, 587.33, 659.25, 698.46, 783.99, 880.00, 987.77, 1046.50];
+  const NOTES_NOMS = ['Do','Re','Mi','Fa','Sol','La','Si','Do','Re','Mi','Fa','Sol'];
+
+  // Toca una llista de sons: [{f: freqüència, t: inici (s), d: durada, v: volum}]
+  function tocaSons(sons){
+    const ctx = getAudioCtxMusica(); if(!ctx) return;
+    sons.forEach(s=> nota(ctx, s.f, s.t, s.d, 'triangle', s.v!==undefined ? s.v : 0.25));
+  }
+  function tocaMelodia(indexos, pas){
+    tocaSons(indexos.map((ix,i)=>({ f: NOTES_FREQ[ix], t: 0.1+i*pas, d: pas*0.85 })));
+  }
+
+  // ---------- ÀREA DE MÚSICA: BANCS ----------
+
+  const INSTRUMENTS = [
+    {emoji:'🥁', nom:'tambor',   amb:'el tambor',   familia:'Percussió'},
+    {emoji:'🔔', nom:'campana',  amb:'la campana',  familia:'Percussió'},
+    {emoji:'🎸', nom:'guitarra', amb:'la guitarra', familia:'Corda'},
+    {emoji:'🎻', nom:'violí',    amb:'el violí',    familia:'Corda'},
+    {emoji:'🪕', nom:'banjo',    amb:'el banjo',    familia:'Corda'},
+    {emoji:'🎹', nom:'piano',    amb:'el piano',    familia:'Corda'},
+    {emoji:'🎺', nom:'trompeta', amb:'la trompeta', familia:'Vent'},
+    {emoji:'🪈', nom:'flauta',   amb:'la flauta',   familia:'Vent'},
+    {emoji:'🪗', nom:'acordió',  amb:'l\'acordió',  familia:'Vent'},
+    {emoji:'🎷', nom:'saxòfon',  amb:'el saxòfon',  familia:'Vent'},
+  ];
+
+  const FIGURES = [
+    {nom:'la rodona',  temps:4,   buida:true,  plica:false, bandera:false},
+    {nom:'la blanca',  temps:2,   buida:true,  plica:true,  bandera:false},
+    {nom:'la negra',   temps:1,   buida:false, plica:true,  bandera:false},
+    {nom:'la corxera', temps:0.5, buida:false, plica:true,  bandera:true},
+  ];
+
+  const CANCONS = [
+    ['Sol, solet, vine\'m a veure, vine\'m a veure','Sol, solet'],
+    ['En Joan petit quan balla, balla, balla, balla','En Joan petit'],
+    ['El gegant del Pi, ara balla, ara balla','El gegant del Pi'],
+    ['Cargol treu banya, puja la muntanya','Cargol, treu banya'],
+    ['La lluna, la pruna, vestida de dol','La lluna, la pruna'],
+    ['Baixant de la font del gat, una noia, una noia','Baixant de la font del gat'],
+    ['Plou i fa sol, les bruixes es pentinen','Plou i fa sol'],
+  ];
+
+  // Preguntes de quiz: [pregunta, correcta, [respostes dolentes]]
+  const TEMPO_DINAMIQUES = [
+    ['Què vol dir el terme musical «adagio»?','Lent',['Ràpid','Fort','Fluix']],
+    ['Què vol dir el terme musical «allegro»?','Ràpid i alegre',['Molt lent','Fluixet','Trist']],
+    ['Què vol dir el terme musical «andante»?','Tranquil, com caminant',['Molt ràpid','Fortíssim','Aturat']],
+    ['A la música, què vol dir la lletra «p» (piano)?','Que sona fluix',['Que sona fort','Que va ràpid','Que s\'atura']],
+    ['A la música, què vol dir la lletra «f» (forte)?','Que sona fort',['Que sona fluix','Que va lent','Que puja']],
+    ['Què vol dir un «crescendo»?','Que sona cada cop més fort',['Que sona cada cop més fluix','Que va més lent','Que es repeteix']],
+  ];
+
+  const CULTURA_COBLA = [
+    ['Quina és la dansa tradicional de Catalunya?','La sardana',['El flamenc','La jota','El vals']],
+    ['Com es diu el grup de músics que toca les sardanes?','La cobla',['L\'orquestra','La banda','El cor']],
+    ['Quin d\'aquests instruments sona a la cobla?','La tenora',['El piano','La bateria','L\'arpa']],
+    ['Quin instrument petit toca el flabiolaire amb una sola mà?','El flabiol',['La tuba','El violoncel','La guitarra']],
+  ];
+
+  const COMPOSITORS = [
+    ['Quin gran violoncel·lista era català?','Pau Casals',['Mozart','Beethoven','Vivaldi']],
+    ['Qui va compondre «Les quatre estacions»?','Vivaldi',['Pau Casals','Chopin','Bach']],
+    ['Quin compositor va continuar escrivint música tot i quedar-se sord?','Beethoven',['Mozart','Vivaldi','Rossini']],
+    ['Quin nen prodigi ja componia música de ben petit?','Mozart',['Beethoven','Wagner','Bach']],
+  ];
+
+  // ---------- ÀREA DE MÚSICA: GENERADORS ----------
+
+  function genFortFluixF(){
+    return function(){
+      const fortPrimer = Math.random()<0.5;
+      const vols = fortPrimer ? [0.45, 0.06] : [0.06, 0.45];
+      const f = NOTES_FREQ[7];
+      const buscaFort = Math.random()<0.5;
+      const answer = buscaFort ? (fortPrimer?'El primer':'El segon') : (fortPrimer?'El segon':'El primer');
+      return { type:'qualitats', label:'Fort o fluix? 🔊',
+        question: buscaFort ? 'Quin so ha sonat més FORT?' : 'Quin so ha sonat més FLUIX?',
+        visualHTML:'',
+        options:['El primer','El segon'],
+        answer,
+        reproduir: ()=> tocaSons([{f, t:0.1, d:0.5, v:vols[0]}, {f, t:1.0, d:0.5, v:vols[1]}]) };
+    };
+  }
+
+  function genLlargCurtSoF(){
+    return function(){
+      const llargPrimer = Math.random()<0.5;
+      const durades = llargPrimer ? [1.5, 0.25] : [0.25, 1.5];
+      const f = NOTES_FREQ[4];
+      const buscaLlarg = Math.random()<0.5;
+      const answer = buscaLlarg ? (llargPrimer?'El primer':'El segon') : (llargPrimer?'El segon':'El primer');
+      return { type:'qualitats', label:'Llarg o curt? 📏',
+        question: buscaLlarg ? 'Quin so ha durat més (era més LLARG)?' : 'Quin so era més CURT?',
+        visualHTML:'',
+        options:['El primer','El segon'],
+        answer,
+        reproduir: ()=> tocaSons([{f, t:0.1, d:durades[0]}, {f, t:2.1, d:durades[1]}]) };
+    };
+  }
+
+  function genAgutGreuF(dists){
+    return function(){
+      const dist = pick(lvl(dists));
+      const base = rand(0, NOTES_FREQ.length-1-dist);
+      const agutPrimer = Math.random()<0.5;
+      const seq = agutPrimer ? [base+dist, base] : [base, base+dist];
+      const buscaAgut = Math.random()<0.5;
+      const posAgut = agutPrimer ? 'El primer' : 'El segon';
+      const answer = buscaAgut ? posAgut : (agutPrimer ? 'El segon' : 'El primer');
+      return { type:'qualitats', label:'Agut o greu? 🐦🐻',
+        question: buscaAgut ? 'Quin so era més AGUT (com un ocellet)?' : 'Quin so era més GREU (com un os)?',
+        visualHTML:'',
+        options:['El primer','El segon'],
+        answer,
+        reproduir: ()=> tocaSons([{f:NOTES_FREQ[seq[0]], t:0.1, d:0.6}, {f:NOTES_FREQ[seq[1]], t:1.1, d:0.6}]) };
+    };
+  }
+
+  function genRapidLentF(){
+    return function(){
+      const esRapid = Math.random()<0.5;
+      const pas = esRapid ? 0.18 : 0.65;
+      return { type:'qualitats', label:'Ràpid o lent? 🐇🐢',
+        question:'Escolta la música. Anava ràpida o lenta?',
+        visualHTML:'',
+        options:['Ràpida 🐇','Lenta 🐢'],
+        answer: esRapid ? 'Ràpida 🐇' : 'Lenta 🐢',
+        reproduir: ()=> tocaSons(Array.from({length:6},(_,i)=>({f:NOTES_FREQ[4], t:0.1+i*pas, d:0.12}))) };
+    };
+  }
+
+  function genComptarNotesF(maxs, nOpts){
+    return function(){
+      const n = rand(1, lvl(maxs));
+      return { type:'oida', label:'Compta les notes 👂',
+        question:'Escolta bé. Quantes notes has sentit?',
+        visualHTML:'',
+        options: uniqueOptions(n, 1, Math.max(4, lvl(maxs)+1), nOpts),
+        answer:n,
+        reproduir: ()=> tocaSons(Array.from({length:n},(_,i)=>({f:NOTES_FREQ[7], t:0.1+i*0.55, d:0.3}))) };
+    };
+  }
+
+  function genPujaBaixaF(){
+    return function(){
+      const puja = Math.random()<0.5;
+      const pas = state.level>=3 ? pick([1,2]) : 1;
+      const inici = puja ? rand(0, 14-3*pas) : rand(3*pas, 14);
+      const idx = Array.from({length:4},(_,i)=> inici + (puja ? i*pas : -i*pas));
+      return { type:'oida', label:'Puja o baixa? 🎢',
+        question:'Escolta la melodia. Puja o baixa?',
+        visualHTML:'',
+        options:['Puja ⬆️','Baixa ⬇️'],
+        answer: puja ? 'Puja ⬆️' : 'Baixa ⬇️',
+        reproduir: ()=> tocaMelodia(idx, 0.45) };
+    };
+  }
+
+  function genInstrumentF(noms, nOpts){
+    return function(){
+      const pool = INSTRUMENTS.filter(i=>noms.includes(i.nom));
+      const inst = pick(pool);
+      const distr = new Set();
+      let g = 0;
+      while(distr.size < nOpts-1 && g<100){
+        const c = (distr.size < pool.length-1 ? pick(pool) : pick(INSTRUMENTS)).nom;
+        if(c!==inst.nom) distr.add(c);
+        g++;
+      }
+      return { type:'instruments', label:'Els instruments 🎸',
+        question:'Com es diu aquest instrument?',
+        visualHTML:`<div class="visual-row"><span style="font-size:3.4rem;">${inst.emoji}</span></div>`,
+        options: shuffle([inst.nom, ...distr]),
+        answer: inst.nom };
+    };
+  }
+
+  function genFamiliaF(){
+    return function(){
+      // el piano es deixa fora: la seva família fa discutir fins als mestres
+      const inst = pick(INSTRUMENTS.filter(i=>i.nom!=='piano'));
+      return { type:'instruments', label:'Famílies d\'instruments 🎻',
+        question:`De quina família és ${inst.amb}? ${inst.emoji}`,
+        visualHTML:`<div class="visual-row"><span style="font-size:3.4rem;">${inst.emoji}</span></div>`,
+        options: shuffle(['Corda','Vent','Percussió']),
+        answer: inst.familia };
+    };
+  }
+
+  function figuraSVG(f){
+    const cap = `<ellipse cx="30" cy="70" rx="13" ry="9" ${f.buida ? 'fill="white" stroke="#3a3a5c" stroke-width="3"' : 'fill="#3a3a5c"'} transform="rotate(-20 30 70)"/>`;
+    const plica = f.plica ? '<line x1="42" y1="66" x2="42" y2="15" stroke="#3a3a5c" stroke-width="3"/>' : '';
+    const bandera = f.bandera ? '<path d="M42 15 q 18 8 12 28" fill="none" stroke="#3a3a5c" stroke-width="3"/>' : '';
+    return `<svg viewBox="0 0 70 90" width="60" height="78" style="background:white;border-radius:10px;margin:0 4px;">${cap}${plica}${bandera}</svg>`;
+  }
+
+  function fmtTemps(t){
+    return t===0.5 ? 'Mig temps' : (t===1 ? '1 temps' : `${t} temps`);
+  }
+
+  function genFiguraF(subsets){
+    return function(){
+      const noms = lvl(subsets);
+      const fig = pick(FIGURES.filter(f=>noms.includes(f.nom)));
+      if(state.level>=2 && Math.random()<0.5){
+        return { type:'figures', label:'Les figures musicals 🎼',
+          question:`Quants temps dura ${fig.nom}?`,
+          visualHTML:`<div class="visual-row">${figuraSVG(fig)}</div>`,
+          options: shuffle(FIGURES.map(f=>fmtTemps(f.temps))),
+          answer: fmtTemps(fig.temps) };
+      }
+      return { type:'figures', label:'Les figures musicals 🎼',
+        question:'Com es diu aquesta figura?',
+        visualHTML:`<div class="visual-row">${figuraSVG(fig)}</div>`,
+        options: shuffle(FIGURES.map(f=>f.nom)),
+        answer: fig.nom };
+    };
+  }
+
+  function genSumaTempsF(){
+    return function(){
+      const enteres = FIGURES.filter(f=>f.temps>=1);
+      const quantes = state.level>=2 ? 3 : 2;
+      const tria = Array.from({length:quantes}, ()=>pick(enteres));
+      const answer = tria.reduce((s,f)=>s+f.temps, 0);
+      return { type:'figures', label:'Suma de temps 🎼',
+        question:'Quants temps sumen aquestes figures?',
+        visualHTML:`<div class="visual-row">${tria.map(figuraSVG).join('')}</div>`,
+        options: uniqueOptions(answer, Math.max(1,answer-3), answer+3, 4),
+        answer };
+    };
+  }
+
+  function pentagramaSVG(idx){
+    const y = 80 - idx*6;
+    let s = '';
+    for(let i=0;i<5;i++){
+      s += `<line x1="10" y1="${20+i*12}" x2="150" y2="${20+i*12}" stroke="#3a3a5c" stroke-width="2"/>`;
+    }
+    if(idx===0){ s += '<line x1="65" y1="80" x2="95" y2="80" stroke="#3a3a5c" stroke-width="2"/>'; }
+    s += `<ellipse cx="80" cy="${y}" rx="8" ry="6" fill="#5b4bc4" transform="rotate(-15 80 ${y})"/>`;
+    return `<svg viewBox="0 0 160 100" width="220" height="138" style="background:white;border-radius:12px;">${s}</svg>`;
+  }
+
+  function genPentagramaF(rangs){
+    return function(){
+      const maxIdx = lvl(rangs);
+      const idx = rand(0, maxIdx);
+      const answer = NOTES_NOMS[idx];
+      const opcions = new Set([answer]);
+      let g = 0;
+      while(opcions.size<4 && g<80){ opcions.add(NOTES_NOMS[rand(0, maxIdx)]); g++; }
+      return { type:'pentagrama', label:'El pentagrama 🎼',
+        question:'Quina nota és aquesta, en clau de sol?',
+        visualHTML:`<div class="visual-row">${pentagramaSVG(idx)}</div>`,
+        options: shuffle(Array.from(opcions)),
+        answer,
+        reproduir: ()=> tocaSons([{f:NOTES_FREQ[idx], t:0.1, d:0.8}]) };
+    };
+  }
+
+  function genCompasF(){
+    return function(){
+      const compas = pick(['2/4','3/4','4/4']);
+      const answer = Number(compas[0]);
+      return { type:'compas', label:'El compàs 🥁',
+        question:`Quants temps té cada compàs de ${compas}?`,
+        visualHTML:`<div class="visual-row"><span class="num-card">${compas}</span></div>`,
+        options: uniqueOptions(answer, 2, 5, 4),
+        answer };
+    };
+  }
+
+  function genCancoF(nOpts){
+    return function(){
+      const [vers, titol] = pick(CANCONS);
+      const altres = shuffle(CANCONS.filter(c=>c[1]!==titol)).slice(0, nOpts-1).map(c=>c[1]);
+      return { type:'cancons', label:'Cançons populars 🎶',
+        question:`Quina cançó fa així? «${vers}»`,
+        visualHTML:'',
+        options: shuffle([titol, ...altres]),
+        answer: titol };
+    };
+  }
+
+  function genQuizMusicaF(banc, etiqueta, tipus){
+    return function(){
+      const [pregunta, correcta, dolentes] = pick(banc);
+      return { type: tipus, label: etiqueta,
+        question: pregunta,
+        visualHTML:'',
+        options: shuffle([correcta, ...dolentes]),
+        answer: correcta };
+    };
+  }
+
   // ---------- ITINERARI PER CURS ----------
   const GENS = {
     i3: [
@@ -2952,11 +3285,105 @@
     ],
   };
 
+  // ---------- ITINERARI DE MÚSICA PER CURS ----------
+  // Decret 175/2022 (Educació Artística - música) i Decret 21/2023 (Infantil):
+  // qualitats del so a Infantil i cicle inicial, llenguatge musical a cicle
+  // mitjà, tempo/dinàmiques/cultura a cicle superior.
+  const INSTR_BASICS = ['tambor','flauta','guitarra'];
+  const INSTR_MITJANS = ['tambor','flauta','guitarra','piano','violí'];
+  const TOTS_INSTRUMENTS = INSTRUMENTS.map(i=>i.nom);
+
+  const GENS_MUSICA = {
+    i3: [
+      genFortFluixF(),
+      genLlargCurtSoF(),
+      genRapidLentF(),
+      genComptarNotesF([2,3,3], 2),
+      genCancoF(2),
+    ],
+    i4: [
+      genFortFluixF(),
+      genLlargCurtSoF(),
+      genRapidLentF(),
+      genAgutGreuF([[7,8],[6,7],[5,6]]),
+      genPujaBaixaF(),
+      genComptarNotesF([3,4,4], 3),
+      genInstrumentF(INSTR_BASICS, 3),
+      genCancoF(3),
+    ],
+    i5: [
+      genAgutGreuF([[6,7],[5,6],[4,5]]),
+      genPujaBaixaF(),
+      genComptarNotesF([4,5,5], 3),
+      genInstrumentF(INSTR_MITJANS, 3),
+      genCancoF(3),
+      genFortFluixF(),
+      genLlargCurtSoF(),
+      genRapidLentF(),
+    ],
+    p1: [
+      genAgutGreuF([[5,6],[4,5],[3,4]]),
+      genFortFluixF(),
+      genLlargCurtSoF(),
+      genRapidLentF(),
+      genPujaBaixaF(),
+      genFiguraF([['la negra','la blanca'],['la negra','la blanca'],['la negra','la blanca']]),
+      genInstrumentF(TOTS_INSTRUMENTS, 4),
+      genCancoF(4),
+    ],
+    p2: [
+      genFamiliaF(),
+      genFiguraF([['la negra','la blanca'],['la negra','la blanca','la rodona'],['la negra','la blanca','la rodona']]),
+      genAgutGreuF([[4,5],[3,4],[2,3]]),
+      genPujaBaixaF(),
+      genComptarNotesF([5,6,6], 4),
+      genCancoF(4),
+      genInstrumentF(TOTS_INSTRUMENTS, 4),
+    ],
+    p3: [
+      genPentagramaF([4,4,5]),
+      genFiguraF([['la negra','la blanca','la rodona'],['la negra','la blanca','la rodona','la corxera'],['la negra','la blanca','la rodona','la corxera']]),
+      genCompasF(),
+      genQuizMusicaF(CULTURA_COBLA, 'La sardana i la cobla 💃', 'cultura'),
+      genFamiliaF(),
+      genPujaBaixaF(),
+      genAgutGreuF([[3,4],[2,3],[2,3]]),
+    ],
+    p4: [
+      genPentagramaF([5,6,6]),
+      genSumaTempsF(),
+      genCompasF(),
+      genFamiliaF(),
+      genPujaBaixaF(),
+      genFiguraF([['la negra','la blanca','la rodona','la corxera'],['la negra','la blanca','la rodona','la corxera'],['la negra','la blanca','la rodona','la corxera']]),
+      genQuizMusicaF(CULTURA_COBLA, 'La sardana i la cobla 💃', 'cultura'),
+    ],
+    p5: [
+      genPentagramaF([6,8,9]),
+      genQuizMusicaF(TEMPO_DINAMIQUES, 'Tempo i dinàmica 🎚️', 'tempo'),
+      genQuizMusicaF(CULTURA_COBLA, 'La sardana i la cobla 💃', 'cultura'),
+      genQuizMusicaF(COMPOSITORS, 'Els compositors 🎩', 'compositors'),
+      genSumaTempsF(),
+      genCompasF(),
+      genFiguraF([['la negra','la blanca','la rodona','la corxera'],['la negra','la blanca','la rodona','la corxera'],['la negra','la blanca','la rodona','la corxera']]),
+    ],
+    p6: [
+      genPentagramaF([7,9,9]),
+      genSumaTempsF(),
+      genQuizMusicaF(TEMPO_DINAMIQUES, 'Tempo i dinàmica 🎚️', 'tempo'),
+      genQuizMusicaF(COMPOSITORS, 'Els compositors 🎩', 'compositors'),
+      genQuizMusicaF(CULTURA_COBLA, 'La sardana i la cobla 💃', 'cultura'),
+      genCompasF(),
+      genAgutGreuF([[2,3],[1,2],[1,2]]),
+    ],
+  };
+
   const AREES = {
     mates:   { nom:'Números', emoji:'🔢' },
     lletres: { nom:'Lletres', emoji:'📚' },
+    musica:  { nom:'Música',  emoji:'🎵' },
   };
-  const GENS_AREA = { mates: GENS, lletres: GENS_LLETRES };
+  const GENS_AREA = { mates: GENS, lletres: GENS_LLETRES, musica: GENS_MUSICA };
   function currentGenerators(){
     const perArea = GENS_AREA[state.area] || GENS_AREA.mates;
     const gens = activeProfile && perArea[activeProfile.curs];
@@ -3006,10 +3433,25 @@
       grid.appendChild(btn);
     });
 
-    // A Lletres, els d'infantil encara no llegeixen: la pregunta es llegeix
-    // sola (el botó 🔊 serveix per repetir-la). A Primària, veu només manual.
-    if(state.area==='lletres' && etapaActiva()==='infantil'){
+    // Rondes de música amb so: botó per tornar-lo a escoltar
+    if(r.reproduir){
+      const btn = document.createElement('button');
+      btn.className = 'replay-btn';
+      btn.textContent = '🔁 Torna-ho a escoltar';
+      btn.onclick = ()=> r.reproduir();
+      document.getElementById('visualArea').appendChild(btn);
+    }
+
+    // A Lletres i Música, els d'infantil encara no llegeixen: la pregunta es
+    // llegeix sola (el botó 🔊 serveix per repetir-la). A Primària, veu manual.
+    const llegeixPregunta = state.area!=='mates' && etapaActiva()==='infantil';
+    if(llegeixPregunta){
       speak(r.question);
+    }
+    // El so de l'exercici sona sol en aparèixer (després de la veu, si n'hi ha)
+    if(r.reproduir){
+      const ronda = r;
+      setTimeout(()=>{ if(state.current===ronda) ronda.reproduir(); }, llegeixPregunta ? 2400 : 400);
     }
   }
 
@@ -3262,9 +3704,11 @@
       const niv = nivellsPerfil(p);
       const hMates = h.filter(x=>(x.area||'mates')==='mates');
       const hLletres = h.filter(x=>x.area==='lletres');
+      const hMusica = h.filter(x=>x.area==='musica');
       const arees = [];
-      if(hMates.length || !hLletres.length) arees.push(['mates','Números 🔢', hMates]);
+      if(hMates.length || (!hLletres.length && !hMusica.length)) arees.push(['mates','Números 🔢', hMates]);
       if(hLletres.length) arees.push(['lletres','Lletres 📚', hLletres]);
+      if(hMusica.length) arees.push(['musica','Música 🎵', hMusica]);
       // Tipus amb prou intents i pocs encerts: candidats a practicar més
       const perReforcar = Object.keys(s.byType).filter(t=>{
         const info = s.byType[t];
@@ -3277,7 +3721,7 @@
           <span class="parent-avatar">${p.avatar}</span>
           <div>
             <div class="parent-name">${p.name} · ⭐ ${p.stars||0}</div>
-            <div class="parent-sub">Nivells — Números: ${niv.mates.level} · Lletres: ${niv.lletres.level}</div>
+            <div class="parent-sub">Nivells — Números: ${niv.mates.level} · Lletres: ${niv.lletres.level} · Música: ${niv.musica.level}</div>
             <div class="parent-sub">Última partida: ${tempsRelatiu(p.lastPlayed)}</div>
             <div class="parent-sub">Curs:
               <select class="parent-curs" data-idx="${idx}">${CURSOS_ORDRE.map(c=>`<option value="${c}"${c===p.curs?' selected':''}>${CURSOS[c].nom}</option>`).join('')}</select>
@@ -3361,7 +3805,7 @@
     const niv = nivellsPerfil(activeProfile);
     niv[state.area] = { level: state.level, bestLevel: state.bestLevel };
     activeProfile.level = state.level; // per a la targeta de perfil
-    activeProfile.bestLevel = Math.max(niv.mates.bestLevel, niv.lletres.bestLevel);
+    activeProfile.bestLevel = Math.max(niv.mates.bestLevel, niv.lletres.bestLevel, niv.musica.bestLevel);
     activeProfile.history = state.history.slice(-200);
     activeProfile.lastPlayed = Date.now();
     saveProfiles();
@@ -3473,6 +3917,9 @@
     if(!p.nivells.lletres){
       p.nivells.lletres = { level: 1, bestLevel: 1 };
     }
+    if(!p.nivells.musica){
+      p.nivells.musica = { level: 1, bestLevel: 1 };
+    }
     return p.nivells;
   }
 
@@ -3526,7 +3973,7 @@
     activeProfile.stars = 0;
     activeProfile.level = 1;
     activeProfile.bestLevel = 1;
-    activeProfile.nivells = { mates:{level:1,bestLevel:1}, lletres:{level:1,bestLevel:1} };
+    activeProfile.nivells = { mates:{level:1,bestLevel:1}, lletres:{level:1,bestLevel:1}, musica:{level:1,bestLevel:1} };
     activeProfile.history = [];
     saveProfiles();
     startGame(activeProfile);
@@ -3549,6 +3996,7 @@
   document.getElementById('blockExit').addEventListener('click', showProfileScreen);
   document.getElementById('areaMates').addEventListener('click', ()=>triaArea('mates'));
   document.getElementById('areaLletres').addEventListener('click', ()=>triaArea('lletres'));
+  document.getElementById('areaMusica').addEventListener('click', ()=>triaArea('musica'));
   document.getElementById('speakBtn').addEventListener('click', ()=>{ if(state.current) speak(state.current.question); });
   document.getElementById('dashboardBtn').addEventListener('click', openDashboard);
   document.getElementById('dashboardClose').addEventListener('click', closeDashboard);
